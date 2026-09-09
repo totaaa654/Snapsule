@@ -11,9 +11,13 @@ import {
 import {
   ArrowDown,
   ArrowRight,
+  Camera,
+  Download,
   LockKeyhole,
+  ShieldCheck,
   Volume2,
   VolumeX,
+  WandSparkles,
 } from 'lucide-react';
 
 const LandingScene = lazy(() => import('@/components/booth/LandingScene'));
@@ -135,10 +139,11 @@ export default function Home() {
 
   const fade = (start: number, end: number) =>
     Math.max(0, Math.min(1, (scroll - start) / (end - start)));
-  const heroOpacity = 1 - fade(0.12, 0.32);
-  const storyOpacity = Math.min(fade(0.25, 0.4), 1 - fade(0.57, 0.7));
-  const finalOpacity = fade(0.68, 0.84);
-  const boothOpacity = 1 - fade(0.1, 0.27);
+  const heroOpacity = 1 - fade(0.1, 0.24);
+  const storyOpacity = Math.min(fade(0.2, 0.31), 1 - fade(0.4, 0.5));
+  const featureOpacity = Math.min(fade(0.45, 0.56), 1 - fade(0.68, 0.77));
+  const finalOpacity = fade(0.75, 0.87);
+  const boothOpacity = 1 - fade(0.08, 0.22);
 
   return (
     <main className={`experience stage-${stage}`}>
@@ -157,8 +162,8 @@ export default function Home() {
         {stage !== 'inside' && (
           <nav aria-label="Landing navigation">
             <button onClick={() => scrollLanding(0.38)}>About</button>
-            <button onClick={() => scrollLanding(0.52)}>Features</button>
-            <button onClick={() => scrollLanding(0.86)}>Privacy</button>
+            <button onClick={() => scrollLanding(0.59)}>Features</button>
+            <button onClick={() => scrollLanding(0.9)}>Privacy</button>
             <button className="nav-enter" onClick={enter}>
               Enter booth
             </button>
@@ -302,17 +307,52 @@ export default function Home() {
 
             <section
               id="features"
-              className="feature-copy scroll-copy"
+              className="feature-board scroll-copy"
               style={{
-                opacity: storyOpacity,
-                transform: `translate3d(0,${(scroll - 0.45) * -45}px,0)`,
+                opacity: featureOpacity,
+                transform: `translate3d(0,${(0.59 - scroll) * 75}px,0)`,
               }}
             >
-              <span>CAPTURE</span>
-              <i>+</i>
-              <span>CUSTOMIZE</span>
-              <i>+</i>
-              <span>KEEP</span>
+              <div className="feature-heading">
+                <span className="section-index">02 / WHAT YOU GET</span>
+                <h2>
+                  Made for the
+                  <br />
+                  <em>whole moment.</em>
+                </h2>
+                <p>
+                  From camera countdown to a finished strip, every step stays
+                  simple and playful.
+                </p>
+              </div>
+              <div className="feature-grid">
+                <article className="feature-card feature-capture">
+                  <Camera size={24} />
+                  <small>01</small>
+                  <h3>Guided capture</h3>
+                  <p>Pick 2, 3, 4, or 6 shots and follow a calm countdown.</p>
+                </article>
+                <article className="feature-card feature-style">
+                  <WandSparkles size={24} />
+                  <small>02</small>
+                  <h3>Make it yours</h3>
+                  <p>Choose themes, frames, paper, stickers, and light.</p>
+                </article>
+                <article className="feature-card feature-private">
+                  <ShieldCheck size={24} />
+                  <small>03</small>
+                  <h3>Private by design</h3>
+                  <p>Your photos stay on this device.</p>
+                </article>
+                <article className="feature-card feature-export">
+                  <Download size={24} />
+                  <small>04</small>
+                  <h3>Keep it in HD</h3>
+                  <p>
+                    Download a polished PNG or JPG, ready to share or print.
+                  </p>
+                </article>
+              </div>
             </section>
 
             <section
@@ -322,7 +362,7 @@ export default function Home() {
                 transform: `translate3d(0,${(0.82 - scroll) * 80}px,0)`,
               }}
             >
-              <span className="section-index">02 / YOUR TURN</span>
+              <span className="section-index">03 / YOUR TURN</span>
               <h2>
                 Ready when
                 <br />

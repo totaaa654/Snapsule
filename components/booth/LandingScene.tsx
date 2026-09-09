@@ -28,22 +28,30 @@ function Text({
 }) {
   const asset = useMemo(() => {
     const cv = document.createElement('canvas');
-    cv.width = 2048;
+    const fontPixels = 150;
+    const padding = 48;
+    const measure = cv.getContext('2d')!;
+    measure.font = `${fontWeight} ${fontPixels}px Arial`;
+    cv.width = Math.max(
+      256,
+      Math.ceil(measure.measureText(children).width + padding * 2),
+    );
     cv.height = 256;
     const ctx = cv.getContext('2d')!;
-    ctx.font = `${fontWeight} 150px Arial`;
+    ctx.font = `${fontWeight} ${fontPixels}px Arial`;
     ctx.fillStyle = color;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(children, 1024, 128);
+    ctx.fillText(children, cv.width / 2, cv.height / 2);
     const texture = new THREE.CanvasTexture(cv);
     texture.colorSpace = THREE.SRGBColorSpace;
-    return { texture, width: (fontSize * 2048) / 150 };
+    const height = fontSize * 1.35;
+    return { texture, width: height * (cv.width / cv.height), height };
   }, [children, color, fontSize, fontWeight]);
   useEffect(() => () => asset.texture.dispose(), [asset]);
   return (
     <mesh position={position}>
-      <planeGeometry args={[asset.width, (fontSize * 256) / 150]} />
+      <planeGeometry args={[asset.width, asset.height]} />
       <meshBasicMaterial
         map={asset.texture}
         transparent
@@ -174,8 +182,8 @@ function Booth({
         color="#ffedc5"
       />
       <Text
-        position={[0, 3.12, 0.908]}
-        fontSize={0.235}
+        position={[0, 3.16, 0.908]}
+        fontSize={0.21}
         color="#8c1926"
         anchorX="center"
         fontWeight={900}
@@ -184,7 +192,7 @@ function Booth({
       </Text>
       <Text
         position={[0, 2.95, 0.91]}
-        fontSize={0.058}
+        fontSize={0.045}
         color="#8c1926"
         letterSpacing={0.06}
       >
@@ -215,10 +223,10 @@ function Booth({
         color="#e8d7b8"
         metal={0.5}
       />
-      <Text position={[-0.79, 2.25, 0.78]} fontSize={0.066} color="#a72131">
+      <Text position={[-0.79, 2.25, 0.78]} fontSize={0.038} color="#a72131">
         YOUR LITTLE
       </Text>
-      <Text position={[-0.79, 2.14, 0.78]} fontSize={0.072} color="#a72131">
+      <Text position={[-0.79, 2.14, 0.78]} fontSize={0.038} color="#a72131">
         TIME CAPSULE
       </Text>
       <Box
@@ -239,7 +247,7 @@ function Booth({
         scale={[0.3, 0.04, 0.03]}
         color="#161618"
       />
-      <Text position={[-0.79, 1.13, 0.8]} fontSize={0.049} color="#2e2724">
+      <Text position={[-0.79, 1.13, 0.8]} fontSize={0.021} color="#2e2724">
         COLLECT MEMORIES HERE
       </Text>
       <Box
@@ -339,43 +347,6 @@ function moveLandingCamera(
   camera.lookAt(0, 1.62, 0);
 }
 
-function CheckerFloor() {
-  const texture = useMemo(() => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 256;
-    canvas.height = 256;
-    const context = canvas.getContext('2d')!;
-    const size = 64;
-    for (let y = 0; y < 4; y += 1) {
-      for (let x = 0; x < 4; x += 1) {
-        context.fillStyle = (x + y) % 2 === 0 ? '#160b0d' : '#3b2522';
-        context.fillRect(x * size, y * size, size, size);
-      }
-    }
-    const map = new THREE.CanvasTexture(canvas);
-    map.wrapS = THREE.RepeatWrapping;
-    map.wrapT = THREE.RepeatWrapping;
-    map.repeat.set(4, 4);
-    map.colorSpace = THREE.SRGBColorSpace;
-    return map;
-  }, []);
-  useEffect(() => () => texture.dispose(), [texture]);
-  return (
-    <mesh
-      rotation={[-Math.PI / 2, 0, 0]}
-      position={[0, -0.01, 0]}
-      receiveShadow
-    >
-      <planeGeometry args={[16, 16]} />
-      <meshStandardMaterial
-        map={texture}
-        color="#8a625d"
-        roughness={0.55}
-        metalness={0.12}
-      />
-    </mesh>
-  );
-}
 class SafeScene extends Component<
   { children: ReactNode; onEnter: () => void },
   { failed: boolean }
@@ -443,7 +414,6 @@ export default function LandingScene({
           distance={5}
           color="#ff6b42"
         />
-        <CheckerFloor />
         <Booth entering={entering} progress={progress} onEnter={onEnter} />
         <ContactShadows
           position={[0, 0, 0]}
