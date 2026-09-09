@@ -48,6 +48,12 @@ export const frames = [
   'Photo corners',
   'Sweethearts',
   'Minimal black',
+  'Daisy chain',
+  'Star confetti',
+  'Wavy ribbon',
+  'Neon glow',
+  'Scalloped candy',
+  'Postage stamp',
 ];
 export const lights = [
   ['White', '#ffffff'],
@@ -260,6 +266,49 @@ function rounded(
   ctx.beginPath();
   ctx.roundRect(x, y, w, h, r);
 }
+function frameCornerRadius(frame: number, width: number) {
+  if (frame === 4) return Math.min(42, width * 0.075);
+  if (frame === 6) return Math.min(58, width * 0.1);
+  return 0;
+}
+function roundedBand(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  radius: number,
+  inset: number,
+) {
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, radius);
+  ctx.roundRect(
+    x + inset,
+    y + inset,
+    w - inset * 2,
+    h - inset * 2,
+    Math.max(4, radius - inset * 0.45),
+  );
+  ctx.fill('evenodd');
+}
+function star(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  outer: number,
+  inner: number,
+) {
+  ctx.beginPath();
+  for (let i = 0; i < 10; i++) {
+    const angle = -Math.PI / 2 + (i * Math.PI) / 5;
+    const radius = i % 2 === 0 ? outer : inner;
+    const px = cx + Math.cos(angle) * radius;
+    const py = cy + Math.sin(angle) * radius;
+    if (i === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
+  ctx.closePath();
+}
 export function drawFrame(
   ctx: CanvasRenderingContext2D,
   r: Rect,
@@ -304,13 +353,21 @@ export function drawFrame(
     ctx.fillRect(x, y + h - t * 3, w, t * 3);
   }
   if (frame === 4 || frame === 6) {
-    ctx.strokeStyle = frame === 4 ? border : '#efb8dd';
-    ctx.lineWidth = t * 1.8;
-    rounded(ctx, x + t, y + t, w - t * 2, h - t * 2, t * 2);
-    ctx.stroke();
+    const radius = frameCornerRadius(frame, w);
+    const inset = frame === 4 ? t * 1.55 : t * 1.8;
+    ctx.fillStyle = frame === 4 ? border : '#efb8dd';
+    roundedBand(ctx, x, y, w, h, radius, inset);
     if (frame === 6) {
       ctx.strokeStyle = '#fff3ff';
-      ctx.lineWidth = t * 0.25;
+      ctx.lineWidth = t * 0.22;
+      rounded(
+        ctx,
+        x + inset,
+        y + inset,
+        w - inset * 2,
+        h - inset * 2,
+        Math.max(4, radius - inset * 0.45),
+      );
       ctx.stroke();
     }
   }
@@ -382,6 +439,117 @@ export function drawFrame(
     ctx.lineWidth = t * 0.6;
     ctx.strokeRect(x + t * 0.3, y + t * 0.3, w - t * 0.6, h - t * 0.6);
   }
+  if (frame === 12) {
+    ctx.strokeStyle = '#f7e7c2';
+    ctx.lineWidth = t * 1.5;
+    ctx.strokeRect(x + t * 0.75, y + t * 0.75, w - t * 1.5, h - t * 1.5);
+    const flowers = Math.max(4, Math.floor(w / (t * 3.4)));
+    for (let i = 0; i <= flowers; i++) {
+      const px = x + t + ((w - t * 2) * i) / flowers;
+      for (const py of [y + t * 0.8, y + h - t * 0.8]) {
+        ctx.fillStyle = i % 2 ? '#fff6dc' : '#f2c8d8';
+        for (let petal = 0; petal < 5; petal++) {
+          const angle = (petal * Math.PI * 2) / 5;
+          ctx.beginPath();
+          ctx.arc(
+            px + Math.cos(angle) * t * 0.36,
+            py + Math.sin(angle) * t * 0.36,
+            t * 0.24,
+            0,
+            Math.PI * 2,
+          );
+          ctx.fill();
+        }
+        ctx.fillStyle = '#e4a83e';
+        ctx.beginPath();
+        ctx.arc(px, py, t * 0.2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  }
+  if (frame === 13) {
+    ctx.strokeStyle = '#7454a8';
+    ctx.lineWidth = t * 1.3;
+    ctx.strokeRect(x + t * 0.65, y + t * 0.65, w - t * 1.3, h - t * 1.3);
+    const points = [
+      [x + t * 1.2, y + t * 1.2],
+      [x + w - t * 1.2, y + t * 1.2],
+      [x + t * 1.2, y + h - t * 1.2],
+      [x + w - t * 1.2, y + h - t * 1.2],
+    ];
+    points.forEach(([px, py], i) => {
+      ctx.fillStyle = i % 2 ? '#f6c54d' : '#f4a7d2';
+      star(ctx, px, py, t * 0.9, t * 0.4);
+      ctx.fill();
+    });
+  }
+  if (frame === 14) {
+    ctx.strokeStyle = accent;
+    ctx.lineWidth = t * 0.55;
+    ctx.lineCap = 'round';
+    const step = t * 1.3;
+    for (const edgeY of [y + t * 0.45, y + h - t * 0.45]) {
+      for (let offset = 0; offset < w; offset += step) {
+        ctx.beginPath();
+        ctx.moveTo(x + offset, edgeY);
+        ctx.quadraticCurveTo(
+          x + offset + step * 0.25,
+          edgeY + t * 0.55,
+          x + offset + step * 0.5,
+          edgeY,
+        );
+        ctx.quadraticCurveTo(
+          x + offset + step * 0.75,
+          edgeY - t * 0.55,
+          x + offset + step,
+          edgeY,
+        );
+        ctx.stroke();
+      }
+    }
+    ctx.strokeRect(x + t * 0.8, y + t * 0.8, w - t * 1.6, h - t * 1.6);
+  }
+  if (frame === 15) {
+    ctx.strokeStyle = accent;
+    ctx.lineWidth = t * 0.5;
+    ctx.shadowColor = accent;
+    ctx.shadowBlur = t * 1.4;
+    ctx.strokeRect(x + t, y + t, w - t * 2, h - t * 2);
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = '#fff4fa';
+    ctx.lineWidth = t * 0.13;
+    ctx.strokeRect(x + t, y + t, w - t * 2, h - t * 2);
+  }
+  if (frame === 16) {
+    ctx.fillStyle = '#f3b9cf';
+    const radius = t * 0.72;
+    for (let px = x + radius; px < x + w; px += radius * 1.65) {
+      ctx.beginPath();
+      ctx.arc(px, y + radius * 0.35, radius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(px, y + h - radius * 0.35, radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    for (let py = y + radius; py < y + h; py += radius * 1.65) {
+      ctx.beginPath();
+      ctx.arc(x + radius * 0.35, py, radius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(x + w - radius * 0.35, py, radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  if (frame === 17) {
+    ctx.strokeStyle = '#f7e9ce';
+    ctx.lineWidth = t * 1.6;
+    ctx.setLineDash([t * 0.7, t * 0.48]);
+    ctx.strokeRect(x + t * 0.8, y + t * 0.8, w - t * 1.6, h - t * 1.6);
+    ctx.setLineDash([]);
+    ctx.strokeStyle = '#9b3041';
+    ctx.lineWidth = t * 0.18;
+    ctx.strokeRect(x + t * 1.65, y + t * 1.65, w - t * 3.3, h - t * 3.3);
+  }
   ctx.restore();
 }
 export async function renderStrip(
@@ -434,14 +602,7 @@ export async function renderStrip(
   );
   g.rects.forEach((r, i) => {
     ctx.save();
-    rounded(
-      ctx,
-      r.x,
-      r.y,
-      r.w,
-      r.h,
-      settings.frame === 4 || settings.frame === 6 ? 40 : 0,
-    );
+    rounded(ctx, r.x, r.y, r.w, r.h, frameCornerRadius(settings.frame, r.w));
     ctx.clip();
     ctx.fillStyle = '#d8cbb7';
     ctx.fillRect(r.x, r.y, r.w, r.h);

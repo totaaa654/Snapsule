@@ -1249,15 +1249,20 @@ a {
   border-bottom: 12px solid #fff4de;
 }
 .frame-4 {
+  overflow: hidden;
+  border-color: #f2dfbd;
   border-radius: 12px;
   border-width: 5px;
+  box-shadow: inset 0 0 0 3px #8d4b24;
 }
 .frame-5 {
   border: 6px ridge #c2c6cc;
 }
 .frame-6 {
+  overflow: hidden;
   border: 6px ridge #eec6df;
   border-radius: 15px;
+  box-shadow: inset 0 0 0 2px #fff5fd;
 }
 .frame-7 {
   border: 5px dashed #ad2b3c;
@@ -1278,6 +1283,53 @@ a {
 }
 .frame-11 {
   border: 3px solid #222;
+}
+.frame-12 {
+  border: 5px solid #f7e7c2;
+  background: #7b2634;
+}
+.frame-12:after {
+  position: absolute;
+  inset: -2px;
+  display: grid;
+  place-items: center;
+  content: '✿  ✿';
+  color: #f3cad8;
+  font-size: 16px;
+  letter-spacing: 15px;
+}
+.frame-13 {
+  border: 5px double #7454a8;
+  background: #271637;
+}
+.frame-13:after {
+  content: '★   ✦';
+  color: #f6c54d;
+  font-size: 15px;
+}
+.frame-14 {
+  border: 5px solid transparent;
+  background:
+    linear-gradient(#6e2632, #6e2632) padding-box,
+    repeating-linear-gradient(45deg, #efbdcf 0 4px, #b42b3c 4px 8px) border-box;
+}
+.frame-15 {
+  border: 3px solid #ff528f;
+  background: #21101d;
+  box-shadow:
+    0 0 7px #ff528f,
+    inset 0 0 7px #ff528f;
+}
+.frame-16 {
+  border: 7px dotted #f3b9cf;
+  border-radius: 10px;
+  background: #8b2942;
+}
+.frame-17 {
+  border: 6px dashed #f7e9ce;
+  outline: 1px solid #9b3041;
+  outline-offset: -9px;
+  background: #b75a66;
 }
 .light-options {
   display: grid !important;

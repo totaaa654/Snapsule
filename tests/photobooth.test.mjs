@@ -66,7 +66,7 @@ for (const [count, options] of Object.entries(layouts))
       assert.ok(cv.toBuffer('image/png').length > 2000);
     });
   }
-test('all 12 frames and 12 paper styles render distinct output', async () => {
+test('all frames and paper styles render distinct output', async () => {
   const hashes = new Set();
   for (let i = 0; i < frames.length; i++) {
     const cv = await renderStrip(
@@ -79,7 +79,7 @@ test('all 12 frames and 12 paper styles render distinct output', async () => {
     );
     hashes.add(cv.toDataURL());
   }
-  assert.equal(hashes.size, 12);
+  assert.equal(hashes.size, frames.length);
   const papers = new Set();
   for (let i = 0; i < themes.length; i++) {
     const t = themes[i];
