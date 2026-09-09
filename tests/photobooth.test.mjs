@@ -6,6 +6,7 @@ import {
   layouts,
   defaultSettings,
   renderStrip,
+  drawFrame,
   frames,
   themes,
   stickerNames,
@@ -143,4 +144,30 @@ test('high resolution PNG and JPG output preserves requested dimensions', async 
   assert.equal(cv.height, 3600);
   assert.ok(cv.toBuffer('image/png').length > 10000);
   assert.ok(cv.toBuffer('image/jpeg').length > 10000);
+});
+
+test('every frame stays aligned inside its photo window', () => {
+  const rect = { x: 30, y: 25, w: 140, h: 100 };
+  for (let frame = 0; frame < frames.length; frame++) {
+    const cv = createCanvas(200, 150);
+    const ctx = cv.getContext('2d');
+    drawFrame(ctx, rect, frame, '#ffffff', '#ff0000');
+    const pixels = ctx.getImageData(0, 0, 200, 150).data;
+    for (let y = 0; y < 150; y++) {
+      for (let x = 0; x < 200; x++) {
+        if (
+          x >= rect.x &&
+          x < rect.x + rect.w &&
+          y >= rect.y &&
+          y < rect.y + rect.h
+        )
+          continue;
+        assert.equal(
+          pixels[(y * 200 + x) * 4 + 3],
+          0,
+          `${frames[frame]} escaped its photo window at ${x},${y}`,
+        );
+      }
+    }
+  }
 });

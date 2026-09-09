@@ -270,6 +270,10 @@ export function drawFrame(
   const { x, y, w, h } = r;
   const t = Math.max(10, w * 0.035);
   ctx.save();
+  // Keep each treatment inside the same bounds used by the live preview.
+  ctx.beginPath();
+  ctx.rect(x, y, w, h);
+  ctx.clip();
   ctx.strokeStyle = border;
   ctx.fillStyle = border;
   ctx.lineWidth = t;
@@ -370,8 +374,8 @@ export function drawFrame(
     ctx.fillStyle = accent;
     ctx.font = `${t * 3}px Georgia`;
     ctx.textAlign = 'center';
-    ctx.fillText('♥', x + t * 1.5, y + t * 2.7);
-    ctx.fillText('♥', x + w - t * 1.5, y + h - t * 0.2);
+    ctx.fillText('♥', x + t * 1.8, y + t * 2.8);
+    ctx.fillText('♥', x + w - t * 1.8, y + h - t * 0.8);
   }
   if (frame === 11) {
     ctx.strokeStyle = '#161616';

@@ -2221,3 +2221,409 @@ a {
     font-size: 31px;
   }
 }
+
+/* Guided booth flow */
+.booth-workspace {
+  grid-template-columns: minmax(420px, 1.45fr) minmax(330px, 0.82fr);
+  max-width: 1240px;
+  gap: clamp(28px, 4vw, 64px);
+}
+.interior-setup .booth-workspace {
+  align-items: stretch;
+}
+.interior-setup .camera-column {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+.design-stage {
+  position: relative;
+  display: grid;
+  flex: 1;
+  min-height: 570px;
+  grid-template-columns: minmax(180px, 0.7fr) minmax(190px, 0.6fr);
+  align-items: center;
+  gap: clamp(32px, 5vw, 80px);
+  padding: 42px clamp(28px, 5vw, 70px);
+  overflow: hidden;
+  border: 1px solid #d7a18542;
+  border-radius: 10px;
+  background:
+    linear-gradient(135deg, #210b1422 25%, transparent 25%) 0 0 / 36px 36px,
+    linear-gradient(315deg, #210b1422 25%, transparent 25%) 0 0 / 36px 36px,
+    radial-gradient(circle at 36% 42%, #a65b6850, #2a0d17 72%);
+  box-shadow:
+    inset 0 1px 0 #ffd9c21f,
+    0 24px 50px #1c071044;
+}
+.design-stage::after {
+  content: '';
+  position: absolute;
+  right: -12%;
+  bottom: -35%;
+  width: 65%;
+  height: 65%;
+  border-radius: 50%;
+  background: #c66c7820;
+  filter: blur(45px);
+  pointer-events: none;
+}
+.design-strip-wrap {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  min-width: 0;
+}
+.design-strip-wrap .strip-preview {
+  width: min(100%, 250px);
+  box-shadow: 10px 20px 38px #0d030875;
+  transform: rotate(-2deg);
+  transition:
+    width 0.25s ease,
+    transform 0.25s ease;
+}
+.design-strip-wrap .strip-preview[data-shape='strip'] {
+  width: min(100%, 180px);
+}
+.design-strip-wrap .strip-preview[data-shape='square'],
+.design-strip-wrap .strip-preview[data-shape='landscape'] {
+  width: min(100%, 390px);
+  transform: rotate(-1deg);
+}
+.design-caption {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  color: #e7c5ac;
+}
+.design-caption > span,
+.ticket-kicker {
+  font: 12px monospace;
+  letter-spacing: 1.5px;
+  color: #d89382;
+}
+.design-caption strong {
+  max-width: 260px;
+  margin-top: 18px;
+  font:
+    italic 26px/1.35 Georgia,
+    serif;
+  color: #fff0d4;
+}
+.design-caption small {
+  max-width: 230px;
+  margin-top: 16px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #cda996;
+}
+.setup-panel {
+  min-height: 650px;
+  overflow: visible;
+}
+.setup-progress {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin: 0;
+  padding: 18px 18px 0;
+  list-style: none;
+}
+.setup-progress li {
+  position: relative;
+  min-width: 0;
+}
+.setup-progress li:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 14px;
+  left: calc(50% + 15px);
+  right: calc(-50% + 15px);
+  height: 1px;
+  background: #b69d7d;
+}
+.setup-progress li.complete:not(:last-child)::after {
+  background: #ad2b3e;
+}
+.setup-progress button {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  padding: 0;
+  background: transparent;
+  color: #8d725d;
+}
+.setup-progress button > span {
+  display: grid;
+  width: 29px;
+  height: 29px;
+  place-items: center;
+  border: 1px solid #bda688;
+  border-radius: 50%;
+  background: #e8d7bb;
+  font: 12px monospace;
+}
+.setup-progress li.current button,
+.setup-progress li.complete button {
+  color: #982b3d;
+}
+.setup-progress li.current button > span,
+.setup-progress li.complete button > span {
+  border-color: #a3283b;
+  background: #a3283b;
+  color: #fff0d6;
+  box-shadow: 0 2px 0 #742235;
+}
+.setup-progress small {
+  overflow: hidden;
+  max-width: 100%;
+  font-size: 11px;
+  text-overflow: ellipsis;
+}
+.setup-step {
+  min-height: 450px;
+  animation: setup-step-in 0.24s ease both;
+}
+.step-intro {
+  padding: 25px 22px 5px;
+}
+.step-intro > span {
+  font: 11px monospace;
+  letter-spacing: 1.2px;
+  color: #a12c3e;
+}
+.step-intro h2,
+.ticket-body h2 {
+  margin: 8px 0 6px;
+  font:
+    28px/1.2 Georgia,
+    serif;
+  color: #56362e;
+}
+.step-intro p,
+.ticket-body > p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #8a6d59;
+}
+.setup-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 12px 18px 0;
+  padding-top: 16px;
+  border-top: 1px solid #a88a6a47;
+}
+.setup-actions .red-button {
+  min-width: 145px;
+}
+.setup-actions .text-button:disabled {
+  visibility: hidden;
+}
+.setup-panel .panel-bottom {
+  padding-top: 14px;
+}
+.frame-section {
+  padding-top: 16px;
+}
+.frame-options {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px !important;
+}
+.frame-choice {
+  display: grid;
+  min-width: 0;
+  min-height: 112px;
+  grid-template-rows: 58px 2.8em;
+  place-items: center;
+  gap: 7px;
+  padding: 9px 6px;
+  border: 1px solid #c5ad8e;
+  border-radius: 5px;
+  background: #ead9bd;
+  box-shadow: 0 2px 0 #c1a689;
+}
+.frame-choice.active {
+  border-color: #a9293c;
+  background: #fff0d6;
+  box-shadow:
+    0 0 0 1px #a9293c,
+    0 2px 0 #8d2638;
+}
+.frame-sample {
+  position: relative;
+  width: 64px;
+  height: 52px;
+  align-self: center;
+  box-sizing: border-box;
+}
+.frame-choice small {
+  display: grid;
+  height: 2.8em;
+  place-items: center;
+  align-self: start;
+  line-height: 1.25;
+}
+.camera-settings-grid {
+  padding-top: 12px;
+}
+.light-options.compact {
+  grid-template-columns: repeat(5, 1fr) !important;
+  margin: 8px 0 14px;
+}
+.light-options.compact .light-choice {
+  padding: 5px 1px;
+}
+.light-options.compact .light-choice > span {
+  width: 27px;
+  height: 27px;
+}
+.light-options.compact small {
+  display: none;
+}
+.session-ticket {
+  overflow: hidden;
+}
+.ticket-body {
+  padding: 28px 24px 24px;
+}
+.ticket-body dl {
+  margin: 24px 0;
+  border-top: 1px dashed #aa8f72;
+  border-bottom: 1px dashed #aa8f72;
+}
+.ticket-body dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 11px 0;
+  border-bottom: 1px solid #b9a18442;
+  font-size: 13px;
+}
+.ticket-body dl > div:last-child {
+  border: 0;
+}
+.ticket-body dt {
+  color: #94755f;
+}
+.ticket-body dd {
+  margin: 0;
+  text-align: right;
+  font-weight: 700;
+  color: #5e4034;
+}
+.review-strip-mini {
+  display: grid;
+  min-height: 260px;
+  place-items: center;
+  padding: 22px;
+  margin: 20px 0;
+  border-radius: 5px;
+  background: #d2ba95;
+  box-shadow: inset 0 2px 7px #81654b66;
+}
+.review-strip-mini .strip-preview {
+  width: min(100%, 110px);
+}
+.review-strip-mini .strip-preview[data-shape='square'],
+.review-strip-mini .strip-preview[data-shape='landscape'] {
+  width: 100%;
+}
+.review-stage {
+  display: flex;
+  min-height: 130px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 28px;
+  border: 1px solid #d7a18542;
+  border-radius: 8px;
+  background: #2b0d17aa;
+  text-align: center;
+}
+.review-stage p {
+  max-width: 440px;
+  margin: 0;
+  color: #d6b3a0;
+  font:
+    17px/1.5 Georgia,
+    serif;
+}
+.interior-review .photo-review {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 18px;
+}
+.interior-review .review-photo {
+  padding: 8px;
+}
+.interior-review .review-photo button {
+  min-height: 38px;
+  font-size: 12px !important;
+}
+@keyframes setup-step-in {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@media (max-width: 900px) {
+  .booth-workspace,
+  .interior-decorate .booth-workspace {
+    grid-template-columns: 1fr;
+    max-width: 600px;
+  }
+  .design-stage {
+    min-height: 440px;
+  }
+  .setup-panel {
+    min-height: 0;
+  }
+}
+@media (max-width: 560px) {
+  .design-stage {
+    min-height: 390px;
+    grid-template-columns: minmax(125px, 0.75fr) minmax(125px, 0.65fr);
+    gap: 22px;
+    padding: 26px 22px;
+  }
+  .design-strip-wrap .strip-preview {
+    max-height: none;
+  }
+  .design-caption strong {
+    font-size: 19px;
+  }
+  .design-caption small {
+    font-size: 12px;
+  }
+  .setup-progress {
+    padding-inline: 12px;
+  }
+  .setup-progress small {
+    font-size: 10px;
+  }
+  .step-intro,
+  .control-section {
+    padding-inline: 18px;
+  }
+  .frame-options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .frame-choice {
+    min-height: 108px;
+  }
+}

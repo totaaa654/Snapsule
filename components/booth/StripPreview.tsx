@@ -51,6 +51,9 @@ export default function StripPreview({
   return (
     <div
       className="strip-preview"
+      data-shape={
+        g.w / g.h > 1.2 ? 'landscape' : g.w / g.h > 0.8 ? 'square' : 'strip'
+      }
       ref={container}
       style={{ aspectRatio: `${g.w}/${g.h}` }}
     >

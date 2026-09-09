@@ -11,7 +11,6 @@ import {
   ArrowLeft,
   ArrowRight,
   Camera,
-  Check,
   Download,
   LockKeyhole,
   Printer,
@@ -27,7 +26,9 @@ import StripPreview from './StripPreview';
 import { useCamera } from './useCamera';
 import {
   defaultSettings,
+  frames,
   geometry,
+  layouts,
   lights,
   filters,
   renderStrip,
@@ -39,6 +40,7 @@ import {
 } from '@/lib/photobooth';
 type Stage =
   | 'setup'
+  | 'ready'
   | 'capturing'
   | 'review'
   | 'decorate'
@@ -53,6 +55,7 @@ export default function BoothInterior({
 }) {
   const [settings, setSettings] = useState<Settings>({ ...defaultSettings }),
     [stage, setStage] = useState<Stage>('setup'),
+    [setupStep, setSetupStep] = useState(0),
     [photos, setPhotos] = useState<string[]>([]),
     [stickers, setStickers] = useState<Sticker[]>([]),
     [selected, setSelected] = useState(''),
@@ -162,9 +165,7 @@ export default function BoothInterior({
         canvas.height = v.videoHeight;
         const ctx = canvas.getContext('2d');
         if (!ctx)
-          throw new Error(
-            'We couldn’t capture that moment. Please try again.',
-          );
+          throw new Error('We couldn’t capture that moment. Please try again.');
         if (mirror) {
           ctx.translate(canvas.width, 0);
           ctx.scale(-1, 1);
@@ -186,7 +187,7 @@ export default function BoothInterior({
             : 'We couldn’t capture that photo. Please try again.',
         );
         setStage(
-          next.filter(Boolean).length === settings.count ? 'review' : 'setup',
+          next.filter(Boolean).length === settings.count ? 'review' : 'ready',
         );
       }
     } finally {
@@ -203,7 +204,7 @@ export default function BoothInterior({
     setCountdown(0);
     setFlashing(false);
     setStage(
-      photos.filter(Boolean).length === settings.count ? 'review' : 'setup',
+      photos.filter(Boolean).length === settings.count ? 'review' : 'ready',
     );
   }
   function reset() {
@@ -216,8 +217,18 @@ export default function BoothInterior({
     finalCanvas.current = null;
     setError('');
     setSessionDate(new Date());
+    setSetupStep(0);
     clearPhotoCache();
     setStage('setup');
+    void cam.start(cam.device);
+  }
+  function openCamera() {
+    setError('');
+    if (photos.filter(Boolean).length === settings.count) {
+      setStage('review');
+      return;
+    }
+    setStage('ready');
     void cam.start(cam.device);
   }
   function leave() {
@@ -390,7 +401,9 @@ export default function BoothInterior({
         <div className="session-steps">
           <span
             className={
-              stage === 'setup' || stage === 'capturing' ? 'current' : ''
+              stage === 'setup' || stage === 'ready' || stage === 'capturing'
+                ? 'current'
+                : ''
             }
           >
             01 <b>Make a moment</b>
@@ -500,28 +513,34 @@ export default function BoothInterior({
             <div className="interior-heading">
               <span className="eyebrow">YOUR LITTLE TIME CAPSULE</span>
               <h1>
-                {stage === 'decorate'
-                  ? 'Add a little you.'
-                  : stage === 'review'
-                    ? 'Worth keeping.'
-                    : 'Make yourself a memory.'}
+                {stage === 'setup'
+                  ? 'Build your keepsake.'
+                  : stage === 'decorate'
+                    ? 'Add a little you.'
+                    : stage === 'review'
+                      ? 'Worth keeping.'
+                      : 'Make yourself a memory.'}
               </h1>
             </div>
-            <div className={stage === 'decorate' ? 'camera-hidden' : ''}>
-              <CameraPreview
-                video={cam.video}
-                status={cam.status}
-                error={cam.error}
-                onStart={() => cam.start(cam.device)}
-                settings={settings}
-                mirror={mirror}
-                countdown={countdown}
-                shot={shot}
-                count={settings.count}
-                showLight={showLight}
-              />
-            </div>
-            {stage === 'decorate' ? (
+            {stage === 'setup' ? (
+              <div className="design-stage">
+                <div className="design-strip-wrap">
+                  <StripPreview
+                    photos={photos}
+                    settings={settings}
+                    stickers={stickers}
+                    date={sessionDate}
+                  />
+                </div>
+                <div className="design-caption">
+                  <span>{String(settings.count).padStart(2, '0')} MOMENTS</span>
+                  <strong>
+                    {settings.caption || 'Your little time capsule'}
+                  </strong>
+                  <small>Changes appear here as you make them.</small>
+                </div>
+              </div>
+            ) : stage === 'decorate' ? (
               <div className="decoration-desk">
                 <StripPreview
                   photos={photos}
@@ -538,17 +557,36 @@ export default function BoothInterior({
                   <em>all dressed up.</em>
                 </span>
               </div>
+            ) : stage === 'review' ? (
+              <div className="review-stage">
+                <span className="ticket-kicker">YOUR CONTACT SHEET</span>
+                <p>
+                  Retake any photo below, or keep going when they feel right.
+                </p>
+              </div>
             ) : (
+              <CameraPreview
+                video={cam.video}
+                status={cam.status}
+                error={cam.error}
+                onStart={() => cam.start(cam.device)}
+                settings={settings}
+                mirror={mirror}
+                countdown={countdown}
+                shot={shot}
+                count={settings.count}
+                showLight={showLight}
+              />
+            )}
+            {(stage === 'ready' || stage === 'capturing') && (
               <div className="capture-console physical-panel">
                 <div className="lcd">
                   <span>
                     {stage === 'capturing'
                       ? 'HOLD THAT SMILE'
-                      : stage === 'review'
-                        ? 'LOOKING GOOD'
-                        : cam.status === 'ready'
-                          ? 'READY WHEN YOU ARE'
-                          : 'CAMERA STANDBY'}
+                      : cam.status === 'ready'
+                        ? 'READY WHEN YOU ARE'
+                        : 'CAMERA STANDBY'}
                   </span>
                   <strong>
                     {String(photoCount).padStart(2, '0')}
@@ -562,17 +600,6 @@ export default function BoothInterior({
                     aria-label="Cancel capture"
                   >
                     <span>■</span>
-                  </button>
-                ) : stage === 'review' ? (
-                  <button
-                    className="shutter-button"
-                    onClick={() => {
-                      setStage('decorate');
-                      beep();
-                    }}
-                    aria-label="Continue to stickers"
-                  >
-                    <ArrowRight size={30} />
                   </button>
                 ) : (
                   <button
@@ -588,21 +615,17 @@ export default function BoothInterior({
                   <strong>
                     {stage === 'capturing'
                       ? 'A moment, please.'
-                      : stage === 'review'
-                        ? 'Make it yours →'
-                        : 'Press for a little forever.'}
+                      : 'Press for a little forever.'}
                   </strong>
                   <span>
                     {stage === 'capturing'
                       ? 'Tap to stop the countdown'
-                      : stage === 'review'
-                        ? 'Add stickers & finish your strip'
-                        : `${timer}-second countdown · ${settings.count} photos`}
+                      : `${timer}-second countdown · ${settings.count} photos`}
                   </span>
                 </div>
               </div>
             )}
-            {photos.length > 0 && stage !== 'decorate' && (
+            {photos.length > 0 && stage !== 'decorate' && stage !== 'setup' && (
               <div className="photo-review">
                 {Array.from({ length: settings.count }, (_, i) => (
                   <div
@@ -633,7 +656,27 @@ export default function BoothInterior({
               is uploaded.
             </p>
           </div>
-          {stage === 'decorate' ? (
+          {stage === 'setup' ? (
+            <ControlPanel
+              step={setupStep}
+              setStep={setSetupStep}
+              onReady={openCamera}
+              settings={settings}
+              onChange={setSettings}
+              locked={photoCount > 0}
+              light={light}
+              setLight={setLight}
+              intensity={intensity}
+              setIntensity={setIntensity}
+              flash={flash}
+              setFlash={setFlash}
+              testLight={testLight}
+              timer={timer}
+              setTimer={setTimer}
+              mirror={mirror}
+              setMirror={setMirror}
+            />
+          ) : stage === 'decorate' ? (
             <aside className="physical-panel sticker-panel">
               <div className="panel-heading">
                 <i className="screw" />
@@ -711,51 +754,107 @@ export default function BoothInterior({
                 className="text-button full"
                 onClick={() => setStage('review')}
               >
-                <ArrowLeft size={14} /> Back to photos & style
+                <ArrowLeft size={14} /> Back to photos
               </button>
             </aside>
           ) : (
-            <fieldset
-              disabled={stage === 'capturing'}
-              className={stage === 'capturing' ? 'controls-disabled' : ''}
-            >
-              <ControlPanel
-                settings={settings}
-                onChange={setSettings}
-                locked={photoCount > 0}
-                light={light}
-                setLight={setLight}
-                intensity={intensity}
-                setIntensity={setIntensity}
-                flash={flash}
-                setFlash={setFlash}
-                testLight={testLight}
-                timer={timer}
-                setTimer={setTimer}
-                mirror={mirror}
-                setMirror={setMirror}
-                devices={cam.devices}
-                device={cam.device}
-                changeDevice={cam.start}
-              />
-            </fieldset>
-          )}
-          {stage !== 'decorate' && (
-            <aside className="preview-column">
-              <span className="field-title">YOUR LITTLE KEEPSAKE</span>
-              <StripPreview
-                photos={photos}
-                settings={settings}
-                stickers={stickers}
-                date={sessionDate}
-              />
-              <span className="preview-caption">
-                {photoCount === settings.count
-                  ? 'A few seconds. Yours forever.'
-                  : 'Your moments will appear here.'}
-              </span>
-              <div className="mini-print-slot" />
-              <small>READY TO PRINT SOMETHING GOOD.</small>
+            <aside className="session-ticket physical-panel">
+              <div className="panel-heading">
+                <i className="screw" />
+                <span>
+                  {stage === 'review' ? 'YOUR SESSION' : 'READY TO GO'}
+                </span>
+                <i className="screw" />
+              </div>
+              <div className="ticket-body">
+                {stage === 'review' ? (
+                  <>
+                    <span className="ticket-kicker">
+                      ALL {settings.count} MOMENTS CAPTURED
+                    </span>
+                    <h2>Keep these?</h2>
+                    <div className="review-strip-mini">
+                      <StripPreview
+                        photos={photos}
+                        settings={settings}
+                        stickers={stickers}
+                        date={sessionDate}
+                      />
+                    </div>
+                    <button
+                      className="red-button full"
+                      onClick={() => setStage('decorate')}
+                    >
+                      Decorate my strip <ArrowRight size={16} />
+                    </button>
+                    <button
+                      className="text-button full"
+                      onClick={() => {
+                        setSetupStep(1);
+                        setStage('setup');
+                      }}
+                    >
+                      Change the style
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <span className="ticket-kicker">YOUR SESSION</span>
+                    <h2>
+                      {settings.count} photos. {timer} seconds each.
+                    </h2>
+                    <dl>
+                      <div>
+                        <dt>Layout</dt>
+                        <dd>
+                          {
+                            layouts[settings.count].find(
+                              (l) => l.id === settings.layout,
+                            )?.name
+                          }
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>Frame</dt>
+                        <dd>{frames[settings.frame]}</dd>
+                      </div>
+                      <div>
+                        <dt>Light</dt>
+                        <dd>{flash ? lights[light][0] : 'Off'}</dd>
+                      </div>
+                      <div>
+                        <dt>Filter</dt>
+                        <dd>{settings.filter}</dd>
+                      </div>
+                    </dl>
+                    {cam.devices.length > 1 && (
+                      <Choice
+                        label="Camera"
+                        value={cam.device}
+                        onChange={cam.start}
+                        options={cam.devices.map((device, index) => ({
+                          value: device.deviceId,
+                          label: device.label || `Camera ${index + 1}`,
+                        }))}
+                      />
+                    )}
+                    <p>
+                      Enable the camera, settle in, then press the red shutter
+                      button.
+                    </p>
+                    <button
+                      className="text-button full"
+                      onClick={() => {
+                        cam.stop();
+                        setSetupStep(0);
+                        setStage('setup');
+                      }}
+                    >
+                      <ArrowLeft size={14} /> Change setup
+                    </button>
+                  </>
+                )}
+              </div>
             </aside>
           )}
         </div>

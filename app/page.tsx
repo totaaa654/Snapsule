@@ -53,8 +53,8 @@ export default function Home() {
             </h1>
             <p>
               Just you, your favorite people, and a few seconds
-              <br className="desktop-break" /> you’ll want to keep. Step
-              inside. Make a memory.
+              <br className="desktop-break" /> you’ll want to keep. Step inside.
+              Make a memory.
             </p>
           </div>
           <div className="scene">
