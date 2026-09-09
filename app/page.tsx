@@ -138,6 +138,7 @@ export default function Home() {
   const heroOpacity = 1 - fade(0.12, 0.32);
   const storyOpacity = Math.min(fade(0.25, 0.4), 1 - fade(0.57, 0.7));
   const finalOpacity = fade(0.68, 0.84);
+  const boothOpacity = 1 - fade(0.1, 0.27);
 
   return (
     <main className={`experience stage-${stage}`}>
@@ -182,7 +183,15 @@ export default function Home() {
           <div className="landing-sticky">
             <div className="cinematic-grain" aria-hidden="true" />
             <div className="cinematic-glow" aria-hidden="true" />
-            <div className="cinematic-scene" data-cursor="booth">
+            <div
+              className="cinematic-scene"
+              data-cursor="booth"
+              style={{
+                opacity: boothOpacity,
+                transform: `translate3d(${scroll * 5}vw,0,0)`,
+                pointerEvents: boothOpacity > 0.05 ? 'auto' : 'none',
+              }}
+            >
               <Suspense
                 fallback={
                   <div className="scene-loading">
@@ -197,6 +206,44 @@ export default function Home() {
                   onEnter={enter}
                 />
               </Suspense>
+            </div>
+
+            <div
+              className="memory-collage"
+              aria-hidden="true"
+              style={{
+                opacity: storyOpacity,
+                transform: `translate3d(0,${(0.45 - scroll) * 80}px,0)`,
+              }}
+            >
+              <div className="memory-card memory-card-one">
+                <i />
+                <span>same energy</span>
+              </div>
+              <div className="memory-card memory-card-two">
+                <i />
+                <span>different stories</span>
+              </div>
+              <div className="memory-card memory-card-three">
+                <i />
+                <span>keep this one</span>
+              </div>
+            </div>
+
+            <div
+              className="keepsake-strip"
+              aria-hidden="true"
+              style={{
+                opacity: finalOpacity,
+                transform: `translate3d(0,${(0.82 - scroll) * 80}px,0) rotate(-4deg)`,
+              }}
+            >
+              <div />
+              <div />
+              <div />
+              <div />
+              <strong>SNAPSULE</strong>
+              <span>little moments, kept forever.</span>
             </div>
 
             <section

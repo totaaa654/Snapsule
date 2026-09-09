@@ -2809,13 +2809,117 @@ a {
   position: absolute;
   z-index: 2;
   top: 1%;
-  right: 8%;
-  width: 61%;
+  right: -1%;
+  width: 58%;
   height: 96%;
   filter: saturate(0.9) contrast(1.08);
+  transition: opacity 0.12s linear;
 }
 .cinematic-scene canvas {
   filter: drop-shadow(0 30px 35px #000a);
+}
+.memory-collage {
+  position: absolute;
+  z-index: 4;
+  top: 17%;
+  right: 8%;
+  width: min(39vw, 600px);
+  height: 62%;
+  pointer-events: none;
+  will-change: opacity, transform;
+}
+.memory-card {
+  position: absolute;
+  width: 36%;
+  padding: 9px 9px 22px;
+  border: 1px solid #ad8b7233;
+  background: #d8c5a8;
+  box-shadow: 0 22px 50px #000a;
+}
+.memory-card i {
+  display: block;
+  aspect-ratio: 0.78;
+  background:
+    radial-gradient(circle at 50% 35%, #d29a7f 0 10%, transparent 11%),
+    radial-gradient(ellipse at 50% 77%, #291619 0 30%, transparent 31%),
+    linear-gradient(145deg, #50151b, #13090b 72%);
+  filter: sepia(0.18) contrast(1.05);
+}
+.memory-card span {
+  display: block;
+  margin-top: 12px;
+  color: #4e342d;
+  font:
+    italic 13px Georgia,
+    serif;
+  text-align: center;
+}
+.memory-card-one {
+  top: 8%;
+  left: 4%;
+  transform: rotate(-8deg);
+}
+.memory-card-two {
+  top: 0;
+  left: 34%;
+  transform: rotate(3deg);
+}
+.memory-card-two i {
+  background:
+    radial-gradient(circle at 47% 33%, #9f6758 0 10%, transparent 11%),
+    radial-gradient(ellipse at 50% 78%, #741b25 0 31%, transparent 32%),
+    linear-gradient(145deg, #301012, #080506 72%);
+}
+.memory-card-three {
+  top: 13%;
+  right: 0;
+  transform: rotate(9deg);
+}
+.memory-card-three i {
+  background:
+    radial-gradient(circle at 54% 34%, #c3866d 0 10%, transparent 11%),
+    radial-gradient(ellipse at 52% 78%, #171315 0 31%, transparent 32%),
+    linear-gradient(145deg, #6e1921, #160709 72%);
+}
+.keepsake-strip {
+  position: absolute;
+  z-index: 4;
+  top: 14%;
+  left: 13%;
+  display: grid;
+  width: min(18vw, 250px);
+  gap: 7px;
+  padding: 12px 12px 22px;
+  pointer-events: none;
+  background: #ead7b8;
+  box-shadow: 0 35px 80px #000b;
+  will-change: opacity, transform;
+}
+.keepsake-strip > div {
+  aspect-ratio: 1.42;
+  background:
+    radial-gradient(circle at 35% 38%, #ba7866 0 11%, transparent 12%),
+    radial-gradient(circle at 66% 39%, #885348 0 10%, transparent 11%),
+    radial-gradient(ellipse at 50% 88%, #721823 0 39%, transparent 40%),
+    linear-gradient(145deg, #5c1720, #150900);
+}
+.keepsake-strip > div:nth-child(even) {
+  filter: sepia(0.4) brightness(0.8);
+}
+.keepsake-strip strong {
+  margin-top: 7px;
+  color: #a22130;
+  font:
+    900 20px Arial,
+    sans-serif;
+  text-align: center;
+}
+.keepsake-strip span {
+  color: #6c4f43;
+  font:
+    italic 11px Georgia,
+    serif;
+  text-align: center;
 }
 .scroll-copy {
   position: absolute;
@@ -3166,6 +3270,14 @@ a {
     right: 6%;
     width: 58%;
   }
+  .memory-collage {
+    right: 3%;
+    width: 48vw;
+  }
+  .keepsake-strip {
+    left: 8%;
+    width: 24vw;
+  }
 }
 @media (max-width: 560px) {
   .stage-outside.experience,
@@ -3238,6 +3350,17 @@ a {
     top: 20%;
     right: 7%;
     width: 86%;
+  }
+  .memory-collage {
+    top: 48%;
+    right: 4%;
+    width: 78vw;
+    height: 40%;
+  }
+  .keepsake-strip {
+    top: 44%;
+    left: 8%;
+    width: 34vw;
   }
   .neon-note {
     display: none;
