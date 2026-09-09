@@ -2792,7 +2792,7 @@ a {
       #fff 0 0.5px,
       transparent 0.8px 5px
     );
-  animation: grain-shift 0.28s steps(2) infinite;
+  animation: grain-shift 1.2s steps(2) infinite;
 }
 .cinematic-glow {
   position: absolute;
@@ -2900,7 +2900,8 @@ a {
   background:
     radial-gradient(circle at 35% 38%, #ba7866 0 11%, transparent 12%),
     radial-gradient(circle at 66% 39%, #885348 0 10%, transparent 11%),
-    radial-gradient(ellipse at 50% 88%, #721823 0 39%, transparent 40%),
+    radial-gradient(ellipse at 30% 90%, #721823 0 20%, transparent 21%),
+    radial-gradient(ellipse at 70% 90%, #46151b 0 20%, transparent 21%),
     linear-gradient(145deg, #5c1720, #150900);
 }
 .keepsake-strip > div:nth-child(even) {

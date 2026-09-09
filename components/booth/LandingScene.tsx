@@ -87,23 +87,15 @@ function Box({
     </RoundedBox>
   );
 }
-function Curtain({
-  x,
-  entering,
-  progress,
-}: {
-  x: number;
-  entering: boolean;
-  progress: number;
-}) {
+function Curtain({ x, entering }: { x: number; entering: boolean }) {
   const ref = useRef<THREE.Group>(null);
   useEffect(() => {
     if (ref.current)
       gsap.to(ref.current.scale, {
-        x: entering ? 0.12 : 0.9 - progress * 0.2,
+        x: entering ? 0.12 : 0.87,
         duration: entering ? 1.5 : 0.5,
       });
-  }, [entering, progress]);
+  }, [entering]);
   return (
     <group ref={ref} position={[x, 1.75, 0.4]}>
       {Array.from({ length: 20 }, (_, i) => (
@@ -268,8 +260,8 @@ function Booth({
         color="#d5c8b6"
         metal={0.9}
       />
-      <Curtain x={-0.05} entering={entering} progress={progress} />
-      <Curtain x={0.67} entering={entering} progress={progress} />
+      <Curtain x={-0.05} entering={entering} />
+      <Curtain x={0.67} entering={entering} />
       <mesh position={[0.3, 0.7, -0.05]} castShadow>
         <cylinderGeometry args={[0.33, 0.33, 0.13, 40]} />
         <meshStandardMaterial color="#b92434" roughness={0.38} />
@@ -382,9 +374,13 @@ export default function LandingScene({
     <SafeScene onEnter={onEnter}>
       <Canvas
         shadows
-        dpr={[1, 1.5]}
+        dpr={[1, 1.2]}
         camera={{ position: [4.3, 2.65, 7.4], fov: 35 }}
-        gl={{ antialias: true, alpha: true }}
+        gl={{
+          antialias: true,
+          alpha: true,
+          powerPreference: 'high-performance',
+        }}
         onCreated={({ camera }) => camera.lookAt(0, 1.6, 0)}
       >
         <fog attach="fog" args={['#080304', 7, 17]} />
@@ -395,7 +391,7 @@ export default function LandingScene({
           intensity={2.5}
           color="#ffe5c0"
           castShadow
-          shadow-mapSize={[1024, 1024]}
+          shadow-mapSize={[512, 512]}
         />
         <directionalLight
           position={[4, 4, 1]}
@@ -421,6 +417,7 @@ export default function LandingScene({
           scale={9}
           blur={2.5}
           far={5}
+          frames={1}
         />
         <CameraMove entering={entering} exiting={exiting} progress={progress} />
       </Canvas>

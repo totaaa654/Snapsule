@@ -112,10 +112,14 @@ export default function Home() {
 
   function enter() {
     if (stage !== 'outside') return;
+    const reducedMotion = matchMedia(
+      '(prefers-reduced-motion: reduce)',
+    ).matches;
+    const boothIsVisible = scroll < 0.22;
     setStage('entering');
     setTimeout(
       () => setStage('inside'),
-      matchMedia('(prefers-reduced-motion: reduce)').matches ? 250 : 2300,
+      reducedMotion || !boothIsVisible ? 180 : 2300,
     );
   }
 
@@ -188,30 +192,33 @@ export default function Home() {
           <div className="landing-sticky">
             <div className="cinematic-grain" aria-hidden="true" />
             <div className="cinematic-glow" aria-hidden="true" />
-            <div
-              className="cinematic-scene"
-              data-cursor="booth"
-              style={{
-                opacity: boothOpacity,
-                transform: `translate3d(${scroll * 5}vw,0,0)`,
-                pointerEvents: boothOpacity > 0.05 ? 'auto' : 'none',
-              }}
-            >
-              <Suspense
-                fallback={
-                  <div className="scene-loading">
-                    Warming the booth lights...
-                  </div>
-                }
+            {(boothOpacity > 0.01 ||
+              (stage === 'entering' && scroll < 0.22)) && (
+              <div
+                className="cinematic-scene"
+                data-cursor="booth"
+                style={{
+                  opacity: boothOpacity,
+                  transform: `translate3d(${scroll * 5}vw,0,0)`,
+                  pointerEvents: boothOpacity > 0.05 ? 'auto' : 'none',
+                }}
               >
-                <LandingScene
-                  progress={scroll}
-                  entering={stage === 'entering'}
-                  exiting={stage === 'exiting'}
-                  onEnter={enter}
-                />
-              </Suspense>
-            </div>
+                <Suspense
+                  fallback={
+                    <div className="scene-loading">
+                      Warming the booth lights...
+                    </div>
+                  }
+                >
+                  <LandingScene
+                    progress={scroll}
+                    entering={stage === 'entering'}
+                    exiting={stage === 'exiting'}
+                    onEnter={enter}
+                  />
+                </Suspense>
+              </div>
+            )}
 
             <div
               className="memory-collage"
