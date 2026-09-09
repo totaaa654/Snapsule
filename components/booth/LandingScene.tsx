@@ -1,5 +1,5 @@
 ﻿'use client';
-import { Canvas, useThree } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { ContactShadows, RoundedBox } from '@react-three/drei';
 import {
   useEffect,
@@ -79,12 +79,23 @@ function Box({
     </RoundedBox>
   );
 }
-function Curtain({ x, entering }: { x: number; entering: boolean }) {
+function Curtain({
+  x,
+  entering,
+  progress,
+}: {
+  x: number;
+  entering: boolean;
+  progress: number;
+}) {
   const ref = useRef<THREE.Group>(null);
   useEffect(() => {
     if (ref.current)
-      gsap.to(ref.current.scale, { x: entering ? 0.12 : 0.87, duration: 1.5 });
-  }, [entering]);
+      gsap.to(ref.current.scale, {
+        x: entering ? 0.12 : 0.9 - progress * 0.2,
+        duration: entering ? 1.5 : 0.5,
+      });
+  }, [entering, progress]);
   return (
     <group ref={ref} position={[x, 1.75, 0.4]}>
       {Array.from({ length: 20 }, (_, i) => (
@@ -105,14 +116,28 @@ function Curtain({ x, entering }: { x: number; entering: boolean }) {
 }
 function Booth({
   entering,
+  progress,
   onEnter,
 }: {
   entering: boolean;
+  progress: number;
   onEnter: () => void;
 }) {
   const [hover, setHover] = useState(false);
+  const group = useRef<THREE.Group>(null);
+  useFrame((state, delta) => {
+    if (!group.current || entering) return;
+    group.current.rotation.y = THREE.MathUtils.damp(
+      group.current.rotation.y,
+      -0.18 + progress * 0.13,
+      4,
+      delta,
+    );
+    group.current.position.y = Math.sin(state.clock.elapsedTime * 0.45) * 0.008;
+  });
   return (
     <group
+      ref={group}
       rotation={[0, -0.18, 0]}
       onClick={onEnter}
       onPointerOver={() => {
@@ -173,7 +198,7 @@ function Booth({
               <meshStandardMaterial
                 color="#fff0c9"
                 emissive="#ffcc72"
-                emissiveIntensity={hover ? 4 : 2}
+                emissiveIntensity={hover ? 5 : 2.2 + progress * 1.4}
               />
             </mesh>
           ))}
@@ -235,8 +260,8 @@ function Booth({
         color="#d5c8b6"
         metal={0.9}
       />
-      <Curtain x={-0.05} entering={entering} />
-      <Curtain x={0.67} entering={entering} />
+      <Curtain x={-0.05} entering={entering} progress={progress} />
+      <Curtain x={0.67} entering={entering} progress={progress} />
       <mesh position={[0.3, 0.7, -0.05]} castShadow>
         <cylinderGeometry args={[0.33, 0.33, 0.13, 40]} />
         <meshStandardMaterial color="#b92434" roughness={0.38} />
@@ -255,7 +280,7 @@ function Booth({
       </mesh>
       <pointLight
         position={[0.3, 2.6, 0.1]}
-        intensity={hover ? 4 : 2}
+        intensity={hover ? 4.5 : 2 + progress}
         color="#ffddaa"
         distance={3}
       />
@@ -265,11 +290,17 @@ function Booth({
 function CameraMove({
   entering,
   exiting = false,
+  progress,
 }: {
   entering: boolean;
   exiting?: boolean;
+  progress: number;
 }) {
   const { camera } = useThree();
+  useFrame((_, delta) => {
+    if (entering || exiting) return;
+    moveLandingCamera(camera, progress, delta);
+  });
   useEffect(() => {
     if (entering)
       gsap.to(camera.position, {
@@ -294,6 +325,57 @@ function CameraMove({
   }, [entering, exiting, camera]);
   return null;
 }
+
+function moveLandingCamera(
+  camera: THREE.Camera,
+  progress: number,
+  delta: number,
+) {
+  camera.position.set(
+    THREE.MathUtils.damp(camera.position.x, 4.3 - progress * 2.25, 3, delta),
+    THREE.MathUtils.damp(camera.position.y, 2.65 - progress * 0.48, 3, delta),
+    THREE.MathUtils.damp(camera.position.z, 7.4 - progress * 2, 3, delta),
+  );
+  camera.lookAt(0, 1.62, 0);
+}
+
+function CheckerFloor() {
+  const texture = useMemo(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 256;
+    canvas.height = 256;
+    const context = canvas.getContext('2d')!;
+    const size = 64;
+    for (let y = 0; y < 4; y += 1) {
+      for (let x = 0; x < 4; x += 1) {
+        context.fillStyle = (x + y) % 2 === 0 ? '#160b0d' : '#3b2522';
+        context.fillRect(x * size, y * size, size, size);
+      }
+    }
+    const map = new THREE.CanvasTexture(canvas);
+    map.wrapS = THREE.RepeatWrapping;
+    map.wrapT = THREE.RepeatWrapping;
+    map.repeat.set(4, 4);
+    map.colorSpace = THREE.SRGBColorSpace;
+    return map;
+  }, []);
+  useEffect(() => () => texture.dispose(), [texture]);
+  return (
+    <mesh
+      rotation={[-Math.PI / 2, 0, 0]}
+      position={[0, -0.01, 0]}
+      receiveShadow
+    >
+      <planeGeometry args={[16, 16]} />
+      <meshStandardMaterial
+        map={texture}
+        color="#8a625d"
+        roughness={0.55}
+        metalness={0.12}
+      />
+    </mesh>
+  );
+}
 class SafeScene extends Component<
   { children: ReactNode; onEnter: () => void },
   { failed: boolean }
@@ -317,10 +399,12 @@ class SafeScene extends Component<
 export default function LandingScene({
   entering,
   exiting = false,
+  progress,
   onEnter,
 }: {
   entering: boolean;
   exiting?: boolean;
+  progress: number;
   onEnter: () => void;
 }) {
   return (
@@ -332,17 +416,35 @@ export default function LandingScene({
         gl={{ antialias: true, alpha: true }}
         onCreated={({ camera }) => camera.lookAt(0, 1.6, 0)}
       >
-        <ambientLight intensity={0.9} color="#ffe7ca" />
-        <hemisphereLight args={['#ffecd4', '#5b3533', 1.2]} />
+        <fog attach="fog" args={['#080304', 7, 17]} />
+        <ambientLight intensity={0.4} color="#ffd4ae" />
+        <hemisphereLight args={['#f2c9a0', '#26080c', 0.65]} />
         <directionalLight
           position={[-3, 7, 5]}
-          intensity={3.2}
+          intensity={2.5}
           color="#ffe5c0"
           castShadow
           shadow-mapSize={[1024, 1024]}
         />
-        <directionalLight position={[4, 4, 1]} intensity={1.6} />
-        <Booth entering={entering} onEnter={onEnter} />
+        <directionalLight
+          position={[4, 4, 1]}
+          intensity={1.1}
+          color="#b52a2f"
+        />
+        <pointLight
+          position={[-3, 2.4, 2]}
+          intensity={15}
+          distance={6}
+          color="#a70e19"
+        />
+        <pointLight
+          position={[3, 1.2, 3]}
+          intensity={8}
+          distance={5}
+          color="#ff6b42"
+        />
+        <CheckerFloor />
+        <Booth entering={entering} progress={progress} onEnter={onEnter} />
         <ContactShadows
           position={[0, 0, 0]}
           opacity={0.55}
@@ -350,7 +452,7 @@ export default function LandingScene({
           blur={2.5}
           far={5}
         />
-        <CameraMove entering={entering} exiting={exiting} />
+        <CameraMove entering={entering} exiting={exiting} progress={progress} />
       </Canvas>
     </SafeScene>
   );

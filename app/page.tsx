@@ -1,13 +1,111 @@
-﻿'use client';
-import { lazy, Suspense, useState } from 'react';
-import { ArrowUpRight, Volume2, VolumeX, LockKeyhole } from 'lucide-react';
+'use client';
+
+import {
+  lazy,
+  Suspense,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+} from 'react';
+import {
+  ArrowDown,
+  ArrowRight,
+  LockKeyhole,
+  Volume2,
+  VolumeX,
+} from 'lucide-react';
+
 const LandingScene = lazy(() => import('@/components/booth/LandingScene'));
 const BoothInterior = lazy(() => import('@/components/booth/BoothInterior'));
+
+function CursorEffect() {
+  const dot = useRef<HTMLDivElement>(null);
+  const ring = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (matchMedia('(pointer: coarse)').matches) return;
+    let x = -100;
+    let y = -100;
+    let ringX = -100;
+    let ringY = -100;
+    let frame = 0;
+
+    const move = (event: PointerEvent) => {
+      x = event.clientX;
+      y = event.clientY;
+      if (dot.current)
+        dot.current.style.transform = `translate3d(${x}px,${y}px,0)`;
+      const target = event.target as HTMLElement;
+      ring.current?.classList.toggle(
+        'is-active',
+        Boolean(target.closest('button,a,[data-cursor]')),
+      );
+      ring.current?.classList.toggle(
+        'is-booth',
+        Boolean(target.closest('[data-cursor="booth"]')),
+      );
+    };
+    const tick = () => {
+      ringX += (x - ringX) * 0.14;
+      ringY += (y - ringY) * 0.14;
+      if (ring.current) {
+        ring.current.style.transform = `translate3d(${ringX}px,${ringY}px,0)`;
+      }
+      frame = requestAnimationFrame(tick);
+    };
+
+    window.addEventListener('pointermove', move);
+    frame = requestAnimationFrame(tick);
+    return () => {
+      window.removeEventListener('pointermove', move);
+      cancelAnimationFrame(frame);
+    };
+  }, []);
+
+  return (
+    <>
+      <div className="cursor-dot" ref={dot} />
+      <div className="cursor-ring" ref={ring}>
+        <span>ENTER</span>
+      </div>
+    </>
+  );
+}
+
 export default function Home() {
   const [stage, setStage] = useState<
     'outside' | 'entering' | 'inside' | 'exiting'
   >('outside');
   const [sound, setSound] = useState(false);
+  const [scroll, setScroll] = useState(0);
+  const landing = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (stage === 'inside') return;
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const node = landing.current;
+      if (!node) return;
+      const distance = Math.max(1, node.offsetHeight - innerHeight);
+      setScroll(
+        Math.max(0, Math.min(1, -node.getBoundingClientRect().top / distance)),
+      );
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    update();
+    addEventListener('scroll', onScroll, { passive: true });
+    addEventListener('resize', onScroll);
+    return () => {
+      removeEventListener('scroll', onScroll);
+      removeEventListener('resize', onScroll);
+      if (frame) cancelAnimationFrame(frame);
+    };
+  }, [stage]);
+
   function enter() {
     if (stage !== 'outside') return;
     setStage('entering');
@@ -16,95 +114,212 @@ export default function Home() {
       matchMedia('(prefers-reduced-motion: reduce)').matches ? 250 : 2300,
     );
   }
+
   function exit() {
     setStage('exiting');
-    setTimeout(() => setStage('outside'), 900);
+    setTimeout(() => {
+      setStage('outside');
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    }, 900);
   }
+
+  function scrollLanding(progress: number) {
+    const node = landing.current;
+    if (!node) return;
+    const distance = Math.max(0, node.offsetHeight - innerHeight);
+    window.scrollTo({
+      top: node.offsetTop + distance * progress,
+      behavior: 'smooth',
+    });
+  }
+
+  const fade = (start: number, end: number) =>
+    Math.max(0, Math.min(1, (scroll - start) / (end - start)));
+  const heroOpacity = 1 - fade(0.12, 0.32);
+  const storyOpacity = Math.min(fade(0.25, 0.4), 1 - fade(0.57, 0.7));
+  const finalOpacity = fade(0.68, 0.84);
+
   return (
     <main className={`experience stage-${stage}`}>
-      <header className="site-header">
-        <a className="brand" href="/" aria-label="SNAPSULE home">
-          <img src="/assets/logo-mark.svg" alt="" />
+      <CursorEffect />
+      <header className="site-header cinematic-header">
+        <a className="brand" href="#top" aria-label="SNAPSULE home">
           <span>
-            SNAPSULE<small>little moments, kept forever.</small>
+            SNAPSULE<sup>+</sup>
+            <small>
+              A VIRTUAL PHOTOBOOTH
+              <br />
+              FOR REAL MOMENTS.
+            </small>
           </span>
         </a>
-        <div className="header-right">
-          <span className="live-label">
-            <i /> A LITTLE SPACE FOR BIG MEMORIES
-          </span>
-          <button
-            className="icon-button"
-            onClick={() => setSound(!sound)}
-            aria-label={sound ? 'Mute sound' : 'Enable sound'}
-          >
-            {sound ? <Volume2 size={19} /> : <VolumeX size={19} />}
-          </button>
-        </div>
+        {stage !== 'inside' && (
+          <nav aria-label="Landing navigation">
+            <button onClick={() => scrollLanding(0.38)}>About</button>
+            <button onClick={() => scrollLanding(0.52)}>Features</button>
+            <button onClick={() => scrollLanding(0.86)}>Privacy</button>
+            <button className="nav-enter" onClick={enter}>
+              Enter booth
+            </button>
+          </nav>
+        )}
+        <button
+          className="icon-button"
+          onClick={() => setSound(!sound)}
+          aria-label={sound ? 'Mute sound' : 'Enable sound'}
+        >
+          {sound ? <Volume2 size={19} /> : <VolumeX size={19} />}
+        </button>
       </header>
+
       {stage !== 'inside' ? (
-        <section className="landing">
-          <div className="room-caption">
-            <span className="eyebrow">THE INTERNET’S COZIEST PHOTOBOOTH</span>
-            <h1>
-              Some moments
-              <br />
-              deserve a <em>little forever.</em>
-            </h1>
-            <p>
-              Just you, your favorite people, and a few seconds
-              <br className="desktop-break" /> you’ll want to keep. Step inside.
-              Make a memory.
-            </p>
-          </div>
-          <div className="scene">
-            <Suspense
-              fallback={
-                <div className="scene-loading">
-                  Warming up the booth lights…
-                </div>
-              }
+        <section
+          ref={landing}
+          className="landing-cinematic"
+          id="top"
+          style={{ '--scroll': scroll } as CSSProperties}
+        >
+          <div className="landing-sticky">
+            <div className="cinematic-grain" aria-hidden="true" />
+            <div className="cinematic-glow" aria-hidden="true" />
+            <div className="cinematic-scene" data-cursor="booth">
+              <Suspense
+                fallback={
+                  <div className="scene-loading">
+                    Warming the booth lights...
+                  </div>
+                }
+              >
+                <LandingScene
+                  progress={scroll}
+                  entering={stage === 'entering'}
+                  exiting={stage === 'exiting'}
+                  onEnter={enter}
+                />
+              </Suspense>
+            </div>
+
+            <section
+              className="hero-copy scroll-copy"
+              style={{
+                opacity: heroOpacity,
+                transform: `translate3d(0,${scroll * -70}px,0)`,
+              }}
             >
-              <LandingScene
-                entering={stage === 'entering'}
-                exiting={stage === 'exiting'}
-                onEnter={enter}
-              />
-            </Suspense>
-          </div>
-          <button className="enter-label" onClick={enter}>
-            <span className="open-dot" /> THE BOOTH IS YOURS{' '}
-            <ArrowUpRight size={22} />
-            <small>Click the booth to step inside</small>
-          </button>
-          <div className="landing-note">
-            <span>NO COINS NEEDED.</span>
-            <p>
-              Come as you are.
+              <p className="handwritten">
+                Step in.
+                <br />
+                <span>Take a few.</span>
+                <br />
+                <span>Keep it forever.</span>
+              </p>
+              <h1>SNAPSULE</h1>
+              <h2>
+                More than photos.
+                <br />
+                It is a time capsule.
+              </h2>
+              <button
+                className="round-enter"
+                onClick={enter}
+                data-cursor="booth"
+              >
+                <span>
+                  Enter
+                  <br />
+                  booth
+                </span>
+                <ArrowRight size={18} />
+              </button>
+            </section>
+
+            <section
+              id="about"
+              className="story-copy scroll-copy"
+              style={{
+                opacity: storyOpacity,
+                transform: `translate3d(0,${(0.48 - scroll) * 100}px,0)`,
+              }}
+            >
+              <span className="section-index">01 / THE FEELING</span>
+              <h2>
+                Some moments
+                <br />
+                ask to be <em>kept.</em>
+              </h2>
+              <p>
+                Gather your people. Make a face. Let the booth turn a handful of
+                seconds into something you can hold.
+              </p>
+            </section>
+
+            <section
+              id="features"
+              className="feature-copy scroll-copy"
+              style={{
+                opacity: storyOpacity,
+                transform: `translate3d(0,${(scroll - 0.45) * -45}px,0)`,
+              }}
+            >
+              <span>CAPTURE</span>
+              <i>+</i>
+              <span>CUSTOMIZE</span>
+              <i>+</i>
+              <span>KEEP</span>
+            </section>
+
+            <section
+              className="final-copy scroll-copy"
+              style={{
+                opacity: finalOpacity,
+                transform: `translate3d(0,${(0.82 - scroll) * 80}px,0)`,
+              }}
+            >
+              <span className="section-index">02 / YOUR TURN</span>
+              <h2>
+                Ready when
+                <br />
+                you are.
+              </h2>
+              <button
+                className="cinematic-enter"
+                onClick={enter}
+                data-cursor="booth"
+              >
+                Step inside <ArrowRight size={18} />
+              </button>
+              <p id="privacy">
+                <LockKeyhole size={13} /> Photos stay on your device.
+              </p>
+            </section>
+
+            <div className="neon-note" aria-hidden="true">
+              Memories
               <br />
-              Leave with a keepsake.
-            </p>
-            <span className="note-star">✳</span>
+              look good
+              <br />
+              <em>on you</em>
+            </div>
+            <div
+              className="scroll-cue"
+              style={{ opacity: 1 - fade(0.04, 0.18) }}
+            >
+              <span>Scroll to explore</span>
+              <i />
+              <ArrowDown size={16} />
+            </div>
+            <div className="landing-count">
+              <strong>
+                {String(Math.round(scroll * 3) + 1).padStart(2, '0')}
+              </strong>
+              <span>/ 04</span>
+            </div>
           </div>
-          <div className="room-number">
-            BOOTH № 001 <span>OPEN ALL HOURS</span>
-          </div>
-          <footer className="landing-footer">
-            <span>
-              <LockKeyhole size={14} /> Your moments are yours. Always.
-            </span>
-            <span>
-              2, 3, 4 OR 6 PHOTOS <b>·</b> ENDLESS LITTLE POSSIBILITIES
-            </span>
-            <span>
-              MADE FOR THE MEMORIES <span className="red-heart">♥</span>
-            </span>
-          </footer>
         </section>
       ) : (
         <Suspense
           fallback={
-            <div className="scene-loading">Switching on the lights…</div>
+            <div className="scene-loading">Switching on the lights...</div>
           }
         >
           <BoothInterior sound={sound} onExit={exit} />
