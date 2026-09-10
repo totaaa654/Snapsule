@@ -11,6 +11,7 @@ import {
   SelectItem,
 } from '@/components/ui/select';
 import { ArrowLeft, ArrowRight, Camera, Check, Sun } from 'lucide-react';
+import { useState } from 'react';
 import {
   themes,
   frames,
@@ -131,9 +132,14 @@ type Props = {
 };
 
 const stepNames = ['Strip', 'Style', 'Frame', 'Camera'];
+const frameCollections = ['Essentials', 'Playful', 'Storybook'];
+const framesPerCollection = 9;
 
 export default function ControlPanel(p: Props) {
   const s = p.settings;
+  const [frameCollection, setFrameCollection] = useState(
+    Math.floor(s.frame / framesPerCollection),
+  );
   const update = (v: Partial<Settings>) => p.onChange({ ...s, ...v });
   return (
     <aside className="control-panel physical-panel setup-panel">
@@ -317,23 +323,44 @@ export default function ControlPanel(p: Props) {
               </p>
             </div>
             <div className="control-section frame-section">
+              <div className="frame-collections" aria-label="Frame collections">
+                {frameCollections.map((collection, index) => (
+                  <button
+                    type="button"
+                    key={collection}
+                    className={frameCollection === index ? 'active' : ''}
+                    aria-pressed={frameCollection === index}
+                    onClick={() => setFrameCollection(index)}
+                  >
+                    {collection}
+                  </button>
+                ))}
+              </div>
               <RadioGroup
                 className="frame-options"
                 value={String(s.frame)}
                 onValueChange={(v) => update({ frame: Number(v) })}
               >
-                {frames.map((f, i) => (
-                  <label
-                    key={f}
-                    className={`frame-choice ${s.frame === i ? 'active' : ''}`}
-                  >
-                    <RadioGroupItem value={String(i)} />
-                    <span className={`frame-sample frame-${i}`}>
-                      <span>✳</span>
-                    </span>
-                    <small>{f}</small>
-                  </label>
-                ))}
+                {frames
+                  .slice(
+                    frameCollection * framesPerCollection,
+                    (frameCollection + 1) * framesPerCollection,
+                  )
+                  .map((f, offset) => {
+                    const i = frameCollection * framesPerCollection + offset;
+                    return (
+                      <label
+                        key={f}
+                        className={`frame-choice ${s.frame === i ? 'active' : ''}`}
+                      >
+                        <RadioGroupItem value={String(i)} />
+                        <span className={`frame-sample frame-${i}`}>
+                          <span aria-hidden="true">&#10035;</span>
+                        </span>
+                        <small>{f}</small>
+                      </label>
+                    );
+                  })}
               </RadioGroup>
             </div>
           </>
@@ -393,7 +420,7 @@ export default function ControlPanel(p: Props) {
                   ))}
                 </RadioGroup>
               </div>
-              <label className="field">
+              <div className="field">
                 <span>
                   Light intensity <b>{p.intensity}%</b>
                 </span>
@@ -406,7 +433,7 @@ export default function ControlPanel(p: Props) {
                   max={100}
                   aria-label="Light intensity"
                 />
-              </label>
+              </div>
               <button
                 className="metal-button full"
                 disabled={!p.flash}
