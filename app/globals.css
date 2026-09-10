@@ -2599,16 +2599,19 @@ a {
   border-bottom: 1px dashed #aa8f72;
 }
 .filter-picker.compact .filter-options {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  max-height: 238px;
-  overflow-y: auto;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   padding: 2px;
 }
 .filter-picker.compact .filter-choice {
-  padding: 5px 4px 7px;
+  gap: 3px;
+  padding: 4px 3px 5px;
+}
+.filter-picker.compact .filter-swatch {
+  aspect-ratio: 1.45;
 }
 .filter-picker.compact .filter-choice small {
-  font-size: 8px;
+  min-height: 2em;
+  font-size: 7px;
 }
 .light-options.compact {
   grid-template-columns: repeat(5, 1fr) !important;
@@ -2626,6 +2629,81 @@ a {
 }
 .session-ticket {
   overflow: hidden;
+}
+.interior-ready,
+.interior-capturing {
+  padding-top: 14px;
+}
+.interior-ready .interior-top,
+.interior-capturing .interior-top {
+  margin-bottom: 12px;
+}
+.interior-ready .interior-heading,
+.interior-capturing .interior-heading {
+  margin-bottom: 10px;
+}
+.interior-ready .interior-heading h1,
+.interior-capturing .interior-heading h1 {
+  margin-top: 4px;
+  font-size: clamp(27px, 2vw, 34px);
+}
+.interior-ready .camera-screen,
+.interior-capturing .camera-screen {
+  aspect-ratio: 16 / 9;
+}
+.interior-ready .camera-top,
+.interior-capturing .camera-top {
+  height: 36px;
+}
+.interior-ready .camera-bottom,
+.interior-capturing .camera-bottom {
+  height: 34px;
+}
+.interior-ready .capture-console,
+.interior-capturing .capture-console {
+  padding: 10px 15px;
+  margin-top: 8px;
+}
+.interior-ready .privacy,
+.interior-capturing .privacy {
+  margin-block: 9px;
+}
+.camera-session-ticket .ticket-body {
+  padding: 16px 18px 17px;
+}
+.camera-session-ticket .ticket-body h2 {
+  margin-block: 7px;
+  font-size: 22px;
+}
+.camera-session-ticket .ticket-body dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 10px 0;
+}
+.camera-session-ticket .ticket-body dl > div {
+  display: block;
+  min-width: 0;
+  padding: 7px 6px;
+  border-right: 1px solid #b9a18442;
+  font-size: 10px;
+}
+.camera-session-ticket .ticket-body dl > div:nth-child(even) {
+  border-right: 0;
+}
+.camera-session-ticket .ticket-body dd {
+  overflow: hidden;
+  margin-top: 3px;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.camera-session-ticket .filter-picker.compact {
+  padding: 9px 0;
+  margin: 8px 0;
+}
+.camera-session-ticket .ticket-body > p {
+  font-size: 11px;
+  line-height: 1.35;
 }
 .ticket-body {
   padding: 28px 24px 24px;
@@ -2727,6 +2805,21 @@ a {
   .setup-panel {
     min-height: 0;
   }
+  .camera-session-ticket .ticket-body > .ticket-kicker,
+  .camera-session-ticket .ticket-body > h2,
+  .camera-session-ticket .ticket-body > dl,
+  .camera-session-ticket .ticket-body > p,
+  .camera-session-ticket .ticket-body > .text-button {
+    display: none;
+  }
+  .camera-session-ticket .ticket-body {
+    padding: 10px 14px 12px;
+  }
+  .camera-session-ticket .filter-picker.compact {
+    padding: 0;
+    margin: 0;
+    border: 0;
+  }
 }
 @media (max-width: 560px) {
   .design-stage {
@@ -2757,9 +2850,15 @@ a {
   .frame-options {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .filter-options,
-  .filter-picker.compact .filter-options {
+  .filter-options {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .filter-picker.compact .filter-options {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+  .interior-ready .interior-heading,
+  .interior-capturing .interior-heading {
+    display: none;
   }
   .frame-choice {
     min-height: 108px;

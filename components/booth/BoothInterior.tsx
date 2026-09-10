@@ -758,7 +758,13 @@ export default function BoothInterior({
               </button>
             </aside>
           ) : (
-            <aside className="session-ticket physical-panel">
+            <aside
+              className={`session-ticket physical-panel ${
+                stage === 'ready' || stage === 'capturing'
+                  ? 'camera-session-ticket'
+                  : ''
+              }`}
+            >
               <div className="panel-heading">
                 <i className="screw" />
                 <span>
