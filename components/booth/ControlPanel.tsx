@@ -71,6 +71,45 @@ export function Toggle({
   );
 }
 
+export function FilterPicker({
+  value,
+  onChange,
+  compact = false,
+  disabled = false,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  compact?: boolean;
+  disabled?: boolean;
+}) {
+  return (
+    <div className={`filter-picker ${compact ? 'compact' : ''}`}>
+      <span className="field-title">
+        {compact ? 'LIVE FILTER PREVIEW' : 'PHOTO FILTER'}
+      </span>
+      <RadioGroup
+        value={value}
+        onValueChange={(next) => onChange(String(next))}
+        className="filter-options"
+        disabled={disabled}
+      >
+        {Object.entries(filters).map(([name, cssFilter]) => (
+          <label
+            className={`filter-choice ${value === name ? 'active' : ''}`}
+            key={name}
+          >
+            <RadioGroupItem value={name} />
+            <span className="filter-swatch">
+              <i style={{ filter: cssFilter }} />
+            </span>
+            <small>{name}</small>
+          </label>
+        ))}
+      </RadioGroup>
+    </div>
+  );
+}
+
 type Props = {
   step: number;
   setStep: (step: number) => void;
@@ -320,14 +359,9 @@ export default function ControlPanel(p: Props) {
                   label: `${n} seconds`,
                 }))}
               />
-              <Choice
-                label="Photo filter"
+              <FilterPicker
                 value={s.filter}
-                onChange={(v) => update({ filter: v })}
-                options={Object.keys(filters).map((f) => ({
-                  value: f,
-                  label: f,
-                }))}
+                onChange={(filter) => update({ filter })}
               />
               <Toggle
                 label="Mirror preview & photos"

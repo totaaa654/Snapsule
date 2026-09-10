@@ -1,9 +1,9 @@
 'use client';
-import { useEffect, useRef, type RefObject } from 'react';
+import { useEffect, useRef, type RefCallback } from 'react';
 import { Camera, LockKeyhole } from 'lucide-react';
 import { drawFrame, filters, type Settings } from '@/lib/photobooth';
 export default function CameraPreview({
-  video,
+  attachVideo,
   status,
   error,
   onStart,
@@ -14,7 +14,7 @@ export default function CameraPreview({
   count,
   showLight,
 }: {
-  video: RefObject<HTMLVideoElement | null>;
+  attachVideo: RefCallback<HTMLVideoElement>;
   status: string;
   error: string;
   onStart: () => void;
@@ -57,7 +57,7 @@ export default function CameraPreview({
       </div>
       <div className="camera-screen">
         <video
-          ref={video}
+          ref={attachVideo}
           autoPlay
           playsInline
           muted
@@ -97,15 +97,10 @@ export default function CameraPreview({
           </div>
         )}
         {countdown > 0 && (
-          <div
-            className="countdown"
-            role="status"
-            aria-live="assertive"
-            key={countdown}
-          >
+          <output className="countdown" aria-live="assertive" key={countdown}>
             {countdown}
             <small>MAKE A LITTLE MEMORY</small>
-          </div>
+          </output>
         )}
         <div className="viewfinder-meta">
           <span>{status === 'ready' ? '● LIVE' : '○ CAMERA OFF'}</span>

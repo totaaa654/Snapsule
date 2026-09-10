@@ -16,6 +16,13 @@ export function useCamera() {
     stream.current?.getTracks().forEach((t) => t.stop());
     stream.current = null;
   }, []);
+  const attach = useCallback((node: HTMLVideoElement | null) => {
+    video.current = node;
+    if (node && stream.current) {
+      node.srcObject = stream.current;
+      void node.play();
+    }
+  }, []);
   useEffect(() => {
     alive.current = true;
     return () => {
@@ -105,5 +112,5 @@ export function useCamera() {
     },
     [stop],
   );
-  return { video, status, error, devices, device, start, stop };
+  return { video, attach, status, error, devices, device, start, stop };
 }

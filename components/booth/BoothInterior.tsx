@@ -20,7 +20,7 @@ import {
   Move,
 } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
-import ControlPanel, { Choice } from './ControlPanel';
+import ControlPanel, { Choice, FilterPicker } from './ControlPanel';
 import CameraPreview from './CameraPreview';
 import StripPreview from './StripPreview';
 import { useCamera } from './useCamera';
@@ -566,7 +566,7 @@ export default function BoothInterior({
               </div>
             ) : (
               <CameraPreview
-                video={cam.video}
+                attachVideo={cam.attach}
                 status={cam.status}
                 error={cam.error}
                 onStart={() => cam.start(cam.device)}
@@ -838,6 +838,14 @@ export default function BoothInterior({
                         }))}
                       />
                     )}
+                    <FilterPicker
+                      compact
+                      value={settings.filter}
+                      onChange={(filter) =>
+                        setSettings((current) => ({ ...current, filter }))
+                      }
+                      disabled={stage === 'capturing'}
+                    />
                     <p>
                       Enable the camera, settle in, then press the red shutter
                       button.

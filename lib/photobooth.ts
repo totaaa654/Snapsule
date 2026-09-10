@@ -73,6 +73,13 @@ export const filters: Record<string, string> = {
   Warm: 'sepia(.25) saturate(1.15)',
   Cool: 'saturate(.85) hue-rotate(12deg)',
   Film: 'sepia(.3) contrast(1.12) saturate(.8)',
+  'Golden hour': 'sepia(.22) saturate(1.3) brightness(1.07)',
+  'Rose tint': 'sepia(.12) saturate(1.2) hue-rotate(325deg) brightness(1.04)',
+  Dreamy: 'brightness(1.08) contrast(.9) saturate(.88)',
+  Punchy: 'contrast(1.22) saturate(1.18)',
+  Fade: 'brightness(1.08) contrast(.84) saturate(.72)',
+  Sepia: 'sepia(.72) contrast(1.05)',
+  'Night flash': 'brightness(1.08) contrast(1.2) saturate(.7)',
 };
 export const layouts: Record<Count, { id: string; name: string }[]> = {
   2: [
