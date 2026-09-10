@@ -1,19 +1,34 @@
-﻿# SNAPSULE
+# SNAPSULE
 
 _little moments, kept forever._
 
-A frontend-only, interactive red photobooth. Enter a procedural Three.js booth, capture webcam photos, customize a keepsake, add original stickers, and pull a high-resolution print from the machine.
+SNAPSULE is a browser-based photobooth for turning a quick camera session into a finished photo strip. Choose a layout, set the look, take your photos, make a few edits, and save the result to your device.
+
+## How it works
+
+1. **Choose a strip** — Pick 2, 3, 4, or 6 photos, then choose a layout made for that photo count.
+2. **Set the style** — Select a paper theme, adjust the colors, write a short caption, and decide whether to include the date and SNAPSULE mark.
+3. **Choose a frame** — Browse 27 frame designs across the Essentials, Playful, and Storybook collections.
+4. **Get camera-ready** — Preview a filter, choose a countdown, turn mirroring on or off, and set the optional screen light.
+5. **Take the photos** — The booth runs the countdown and captures the full sequence. The camera switches off as soon as the last photo is taken.
+6. **Review the session** — Keep the set or retake one photo. Retakes reopen the camera only for the replacement shot and switch it off again afterward.
+7. **Add the finishing touches** — Place stickers on the strip, then resize, rotate, move, or remove them.
+8. **Save the strip** — Finish the print animation and download the result as a high-resolution PNG or JPG.
+
+The same layout and frame renderer is used for the on-screen preview and the downloaded file, so the final strip matches what was shown during editing.
 
 ## Run locally
 
-Use Node.js 22.13+ (Node 24 recommended for the native TypeScript test runner).
+SNAPSULE requires Node.js 22.13 or newer.
 
 ```sh
 npm install
 npm run dev
 ```
 
-Open the Local address printed by the server. Camera access works on localhost or HTTPS. Mobile devices accessing a computer over a plain HTTP LAN address need an HTTPS tunnel or the deployed HTTPS site.
+Open the local address shown in the terminal. Camera access works on `localhost` or over HTTPS. A plain HTTP address on another device will usually be blocked by the browser.
+
+To check a production build:
 
 ```sh
 npm run typecheck
@@ -21,42 +36,43 @@ npm test
 npm run build
 ```
 
-The production site is a static export in `dist/client`. Serve that directory with any static HTTPS host. `.openai/hosting.json` configures the private Sites deployment. No Worker or photo-processing server is needed. The small Windows build preloader allows native bundler handles to finish closing before the CLI exits; it does not suppress build errors.
+After building, `npm run start` runs the generated production server locally.
 
-## Experience
+## Session controls
 
-- Click the 3D booth, or focus the entrance label and press Enter.
-- Choose 2, 3, 4, or 6 photos and one of 13 count-specific layouts.
-- Select 12 paper themes and 12 live-preview frames. Customize paper, border, text, and accent colors, date, caption, and branding.
-- Enable the camera. Use a 3-, 5-, or 10-second timer, mirror setting, camera selector, and optional filter.
-- Pick from 10 screen-light colors, set intensity, and test the light. This illuminates the display; it does not change hardware brightness.
-- Capture the session. Stop a countdown without losing completed shots, resume unfinished shots, or retake any individual photo.
-- Add any of 16 original SVG stickers. Drag with mouse/touch; use sliders to resize or rotate; delete with the Remove button or keyboard. Arrow keys move the focused sticker.
-- Print and pull/tap the finished strip. Save a PNG or JPG, take another session, or exit.
+- **Photo count:** 2, 3, 4, or 6
+- **Layouts:** 13 options matched to the selected photo count
+- **Paper themes:** 12
+- **Frames:** 27
+- **Filters:** 12 with a live camera preview
+- **Countdown:** 3, 5, or 10 seconds
+- **Screen light:** 10 colors with adjustable intensity
+- **Stickers:** 16 original designs with drag, resize, rotate, and keyboard movement
+- **Downloads:** PNG or JPG
 
-## Architecture
-
-The Sites starter uses **Vinext**, a Vite runtime for the Next.js App Router API, with React 19, TypeScript, and Tailwind. It uses the existing Shadcn/Base UI primitives for tabs, radio groups, switches, selects, and sliders.
-
-- `app/page.tsx`: entrance/exit orchestration and persistent brand header.
-- `components/booth/LandingScene.tsx`: lazy-loaded React Three Fiber scene, procedural booth, chrome trim, curtains, warm bulbs, stool, GSAP camera transition, and WebGL fallback.
-- `components/booth/BoothInterior.tsx`: in-memory session state, countdown, capture, retakes, decoration, print animation, optional synthesized audio, and downloads.
-- `components/booth/useCamera.ts`: explicit camera permission, device enumeration, race-safe stream replacement, timeout/error handling, and cleanup.
-- `components/booth/ControlPanel.tsx`: physical controls composed from accessible primitives.
-- `components/booth/CameraPreview.tsx`: video, live frame overlay, timer, and permission state.
-- `components/booth/StripPreview.tsx`: scaled canvas preview and keyboard/touch sticker editing.
-- `lib/photobooth.ts`: layout geometry, original frame and sticker vectors, themes, and the shared Canvas renderer. Preview and export use the same geometry and drawing code.
-- `public/assets/logo-mark.svg` and `public/assets/snapsule-logo.svg`: original capsule/photo mark and complete logo with tagline.
-- `public/assets/stickers`: 16 reusable original SVG assets. Regenerate with `npm run assets:generate`.
-
-Most strips export at 1200px wide; classic four-photo strips are 1200 × 3600, grids are 2400px wide, and postcards are 3000 × 2000. The selected layout determines the final height.
+A capture can be stopped without deleting photos that were already taken. Starting again continues from the first empty slot.
 
 ## Privacy
 
-Photos exist only in React state, a bounded session image cache, and local canvases. No photo is sent through fetch, XMLHttpRequest, forms, analytics, or an upload API. No images are written to localStorage or IndexedDB. Streams stop on leaving/unmounting and stale permission requests are discarded. Refreshing removes the session; the user explicitly saves their final image through the browser download flow. The optional WebMCP tool changes caption/paper color only and cannot read or transmit photos.
+Photos stay in memory inside the browser while the session is open. They are not uploaded, stored in local storage, or sent to an image-processing service. Leaving the booth, starting a new session, or refreshing the page clears the current session. The camera stream also stops after a completed capture, after a retake, and when leaving the booth.
 
-## Validation and practical limits
+## Project structure
 
-`npm test` runs 16 renderer checks using a native Canvas adapter: every layout stays within its print bounds, frames/themes produce distinct output, all 16 stickers render in exports, and full-resolution PNG/JPG encoding works. TypeScript and the production export are checked separately. The native adapter decodes SVG data URLs to buffers because its image loader differs from a browser's.
+- `app/page.tsx` handles the landing page and booth entry.
+- `components/booth/BoothInterior.tsx` manages the setup, capture, review, decoration, and download flow.
+- `components/booth/ControlPanel.tsx` contains the strip, style, frame, and camera controls.
+- `components/booth/CameraPreview.tsx` shows the live camera, selected filter, frame overlay, and countdown.
+- `components/booth/StripPreview.tsx` renders the editable strip preview.
+- `components/booth/useCamera.ts` manages permission, device selection, stream cleanup, and camera errors.
+- `lib/photobooth.ts` contains the layouts, themes, frames, stickers, and shared canvas renderer.
+- `tests/photobooth.test.mjs` checks layout bounds, frame alignment, renderer output, stickers, and export sizes.
 
-Real webcam permission, real-device lighting, mobile Safari behavior, and visual browser interaction still require testing with actual hardware. The WebMCP integration is feature-detected; no supported WebMCP validation context was available during implementation, so its runtime contract has not been independently verified. Unsupported WebGL falls back to a keyboard-accessible entrance, and reduced-motion preferences shorten transitions. Audio is muted by default and uses no remote sound files.
+## Available commands
+
+```sh
+npm run dev       # start the local development server
+npm run typecheck # check TypeScript
+npm run lint      # run the linter
+npm test          # run the canvas renderer tests
+npm run build     # create the production build
+```
