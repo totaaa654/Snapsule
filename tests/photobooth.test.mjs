@@ -10,7 +10,6 @@ import {
   frames,
   themes,
   stickerNames,
-  stickerURL,
 } from '../lib/photobooth.ts';
 class BrowserImage extends Image {
   set src(value) {
@@ -36,6 +35,12 @@ for (const [count, options] of Object.entries(layouts))
     test(`${count} photos / ${id}: layout stays within print and renders`, async () => {
       const g = geometry(Number(count), id);
       assert.equal(g.rects.length, Number(count));
+      const photoBottom = Math.max(...g.rects.map((r) => r.y + r.h));
+      const brandingTop = g.footer - g.w * 0.049;
+      assert.ok(
+        brandingTop - photoBottom >= 45,
+        'branding is too close to the photo frame',
+      );
       for (const r of g.rects) {
         assert.ok(r.x >= 0 && r.y >= 0 && r.w > 0 && r.h > 0);
         assert.ok(r.x + r.w <= g.w);

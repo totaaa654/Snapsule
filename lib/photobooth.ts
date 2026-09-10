@@ -135,7 +135,8 @@ export function geometry(
   let w = 1200,
     h = count === 6 ? 4800 : count === 4 ? 3600 : count === 3 ? 2900 : 2400;
   const gap = 42,
-    p = 72;
+    p = 72,
+    wideFooterArea = 450;
   let rects: Rect[] = [];
   if (layout === 'postcard') {
     w = 3000;
@@ -144,12 +145,12 @@ export function geometry(
       x: p + i * (w / 2 - p / 2),
       y: p,
       w: w / 2 - p * 1.5,
-      h: 1570,
+      h: h - p - wideFooterArea,
     }));
   } else if (layout === 'grid') {
     w = 2400;
     h = count === 6 ? 3200 : 2400;
-    const rh = (h - 330 - gap * (count / 2 - 1) - p) / (count / 2);
+    const rh = (h - wideFooterArea - gap * (count / 2 - 1) - p) / (count / 2);
     rects = Array.from({ length: count }, (_, i) => ({
       x: p + (i % 2) * ((w - 2 * p - gap) / 2 + gap),
       y: p + Math.floor(i / 2) * (rh + gap),
@@ -163,7 +164,7 @@ export function geometry(
     rects = [{ x: p, y: p, w: w - 2 * p, h: firstH }];
     const cols = count === 3 ? 2 : 3,
       rh =
-        (h - firstH - p - 330 - gap * (count === 3 ? 1 : 2)) /
+        (h - firstH - p - wideFooterArea - gap * (count === 3 ? 1 : 2)) /
         (count === 3 ? 1 : 2);
     for (let i = 1; i < count; i++)
       rects.push({
