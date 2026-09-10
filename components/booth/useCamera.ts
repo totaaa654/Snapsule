@@ -15,6 +15,11 @@ export function useCamera() {
     request.current++;
     stream.current?.getTracks().forEach((t) => t.stop());
     stream.current = null;
+    if (video.current) {
+      video.current.pause();
+      video.current.srcObject = null;
+    }
+    if (alive.current) setStatus('idle');
   }, []);
   const attach = useCallback((node: HTMLVideoElement | null) => {
     video.current = node;
@@ -31,7 +36,7 @@ export function useCamera() {
     };
   }, [stop]);
   const start = useCallback(
-    async (id = '') => {
+    async (id = ''): Promise<boolean> => {
       stop();
       const token = request.current;
       setStatus('requesting');
@@ -41,7 +46,7 @@ export function useCamera() {
           'Camera access needs a secure browser connection. Open this page using HTTPS, or localhost on your computer.',
         );
         setStatus('error');
-        return;
+        return false;
       }
       const timeout = setTimeout(() => {
         if (alive.current && token === request.current) {
@@ -69,14 +74,14 @@ export function useCamera() {
         });
         if (!alive.current || token !== request.current) {
           media.getTracks().forEach((t) => t.stop());
-          return;
+          return false;
         }
         stream.current = media;
         if (video.current) {
           video.current.srcObject = media;
           await video.current.play();
         }
-        if (!alive.current || token !== request.current) return;
+        if (!alive.current || token !== request.current) return false;
         setDevice(media.getVideoTracks()[0].getSettings().deviceId || id);
         setDevices(
           (await navigator.mediaDevices.enumerateDevices()).filter(
@@ -90,6 +95,7 @@ export function useCamera() {
             setError('Your camera disconnected. Reconnect it, then try again.');
           }
         };
+        return true;
       } catch (e) {
         if (alive.current && token === request.current) {
           stream.current?.getTracks().forEach((t) => t.stop());
@@ -106,6 +112,7 @@ export function useCamera() {
           );
           setStatus('error');
         }
+        return false;
       } finally {
         clearTimeout(timeout);
       }

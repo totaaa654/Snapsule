@@ -127,15 +127,18 @@ export default function BoothInterior({
     await new Promise((resolve) => setTimeout(resolve, ms));
     if (!mounted.current || token !== run.current) throw new Error('cancelled');
   };
-  async function capture(retake?: number) {
-    if (busy.current || cam.status !== 'ready') return;
+  async function capture(
+    retake?: number,
+    cameraReady = cam.status === 'ready',
+  ) {
+    if (busy.current || !cameraReady) return;
     busy.current = true;
     const token = ++run.current;
     setError('');
     setTest(false);
     setStage('capturing');
     beep();
-    let next = [...photos];
+    const next = [...photos];
     try {
       const indexes =
         retake !== undefined
@@ -143,7 +146,7 @@ export default function BoothInterior({
           : Array.from({ length: settings.count }, (_, i) => i).filter(
               (i) => !next[i],
             );
-      for (const i of indexes) {
+      for (const [position, i] of indexes.entries()) {
         setShot(i + 1);
         for (let n = timer; n > 0; n--) {
           setCountdown(n);
@@ -174,6 +177,7 @@ export default function BoothInterior({
         ctx.drawImage(v, 0, 0);
         next[i] = canvas.toDataURL('image/jpeg', 0.95);
         setPhotos([...next]);
+        if (position === indexes.length - 1) cam.stop();
         beep(180, 0.13);
         setFlashing(false);
         await pause(650, token);
@@ -197,6 +201,16 @@ export default function BoothInterior({
         busy.current = false;
       }
     }
+  }
+  async function retakePhoto(index: number) {
+    if (busy.current) return;
+    busy.current = true;
+    setError('');
+    setShot(index + 1);
+    setStage('ready');
+    const started = await cam.start(cam.device);
+    busy.current = false;
+    if (mounted.current && started) void capture(index, true);
   }
   function cancel() {
     run.current++;
@@ -640,9 +654,9 @@ export default function BoothInterior({
                     {photos[i] && (
                       <button
                         disabled={
-                          stage === 'capturing' || cam.status !== 'ready'
+                          stage === 'capturing' || cam.status === 'requesting'
                         }
-                        onClick={() => capture(i)}
+                        onClick={() => void retakePhoto(i)}
                       >
                         <RotateCcw size={12} /> Retake {i + 1}
                       </button>
